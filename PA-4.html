@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D</title>
+    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        #questions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Selection of Assessment Methods and Tools</h1>
+    <div id="questions"></div>
+    <button id="submit">Submit Answers</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <footer>
+        <p>Created by Dan_delion</p>
+    </footer>
+
+    <script>
+        // Questions and answers
+        const questions = [
+            { text: "Which assessment method is BEST for gathering detailed biographical information about a client?", options: ["a. Structured personality test", "b. Clinical interview", "c. Speed test", "d. Portfolio review"], answer: "B" },
+            { text: "Which tool is designed to assess personality pathology in adults?", options: ["a. Stanford-Binet Intelligence Scale", "b. Minnesota Multiphasic Personality Inventory (MMPI-2)", "c. Woodcock-Johnson Tests of Achievement", "d. Strong Interest Inventory"], answer: "B" },
+            { text: "Why is naturalistic observation preferred over self-report in assessing child behavior?", options: ["a. It captures real-time behavior without self-bias", "b. It is faster to administer", "c. It requires less training", "d. It guarantees cultural fairness"], answer: "A" },
+            { text: "Why is the Vineland Adaptive Behavior Scale used for individuals with intellectual disabilities?", options: ["a. It measures daily living skills critical for independence", "b. It diagnoses personality disorders", "c. It assesses abstract reasoning", "d. It predicts academic success"], answer: "A" },
+            { text: "Why is the Rorschach Inkblot Test controversial for cross-cultural assessments?", options: ["a. Cultural differences may affect interpretation of ambiguous stimuli", "b. It lacks validity scales", "c. It is time-consuming", "d. It focuses on vocational aptitudes"], answer: "A" },
+            { text: "Which tool is MOST appropriate for assessing cognitive decline in elderly patients?", options: ["a. 7-Minute Screen", "b. Children's Apperception Test", "c. Armed Services Vocational Aptitude Battery (ASVAB)", "d. Myers-Briggs Type Indicator (MBTI)"], answer: "A" },
+            { text: "What assessment is BEST for a non-English-speaking immigrant?", options: ["a. MMPI-2 without adaptation", "b. Culturally adapted nonverbal tests (e.g., Raven's Matrices)", "c. Structured clinical interview in English", "d. Projective storytelling tasks"], answer: "B" },
+            { text: "Which tool is ideal for evaluating vocational interests in adolescents?", options: ["a. Beck Anxiety Inventory", "b. Self-Directed Search (SDS)", "c. Thematic Apperception Test (TAT)", "d. Bender-Gestalt Visual Motor Test"], answer: "B" },
+            { text: "In a school setting, which method is BEST for screening learning disabilities?", options: ["a. Curriculum-Based Measurement (CBM)", "b. MMPI-2", "c. Rorschach Inkblot Test", "d. Halstead-Reitan Battery"], answer: "A" },
+            { text: "Which tool is MOST suitable for a forensic evaluation in a prison?", options: ["a. Strong Interest Inventory", "b. Psychopathy Checklist-Revised (PCL-R)", "c. Vineland Adaptive Behavior Scale", "d. Stanford-Binet Intelligence Scale"], answer: "B" },
+            { text: "Which method is critical for assessing crisis intervention needs after a natural disaster?", options: ["a. Brief trauma symptom inventory", "b. Longitudinal case study", "c. 16 Personality Factor Questionnaire", "d. Cognitive ability test"], answer: "A" },
+            { text: "What tool is essential for tracking progress in a year-long therapy program?", options: ["a. Behavioral checklist with repeated measures", "b. Single-administration IQ test", "c. Projective drawing task", "d. Speed test"], answer: "A" },
+            { text: "A client with suspected autism spectrum disorder needs an evaluation. Which combination is BEST?", options: ["a. ADOS-2 (Autism Diagnostic Observation Schedule) + parent interview", "b. MMPI-2 + Rorschach", "c. Stanford-Binet + Strong Interest Inventory", "d. Self-Directed Search + Portfolio review"], answer: "A" },
+            { text: "Which tool is MOST appropriate for assessing executive functioning in a stroke survivor?", options: ["a. Wisconsin Card Sorting Test", "b. Myers-Briggs Type Indicator", "c. Children's Apperception Test", "d. California Psychological Inventory"], answer: "A" },
+            { text: "Which method is efficient for screening depression in a college student population?", options: ["a. Online self-report survey (e.g., PHQ-9)", "b. Individual clinical interviews", "c. Projective storytelling", "d. Neuropsychological battery"], answer: "A" },
+            { text: "A clinician uses the MBTI for career counseling. What is the PRIMARY limitation?", options: ["a. Low empirical validity for predicting job success", "b. High cultural bias", "c. Time-consuming administration", "d. Complex scoring rules"], answer: "A" },
+            { text: "A school administers a norm-referenced test to evaluate teaching effectiveness. What is the flaw?", options: ["a. Norm-referenced tests compare students, not instructional quality", "b. The test lacks reliability", "c. It is too short", "d. It uses projective techniques"], answer: "A" },
+            { text: "A researcher uses convenience sampling for a test standardization study. What threat arises?", options: ["a. Results lack generalizability", "b. High internal consistency", "c. Improved validity", "d. Reduced administration cost"], answer: "A" },
+            { text: "A community clinic needs to assess trauma in refugees. Recommend a comprehensive plan:", options: ["a. Culturally adapted trauma inventory + interpreter-assisted clinical interview", "b. MMPI-2 + Rorschach", "c. Stanford-Binet + portfolio review", "d. Self-Report Questionnaire (SRQ) alone"], answer: "A" },
+        ];
+
+        // Display questions on the page
+        const questionsDiv = document.getElementById('questions');
+        questions.forEach((question, index) => {
+            questionsDiv.innerHTML += `
+                <div class="question">
+                    <p>${index + 1}. ${question.text}</p>
+                    <div class="options">
+                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${index}"></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('submit').addEventListener('click', () => {
+            let score = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+
+                // Check if the answer is correct
+                const feedbackDiv = document.getElementById(`feedback-${i}`);
+                if (userAnswer === questions[i].answer) {
+                    score++;
+                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                } else {
+                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                }
+            }
+
+            // Display total score
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
+        });
+    </script>
+</body>
+</html>
+
+
+

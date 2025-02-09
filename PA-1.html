@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A</title>
+    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        #questions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Psychometric Properties and Principles</h1>
+    <div id="questions"></div>
+    <button id="submit">Submit Answers</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <footer>
+        <p>Created by Dan_delion</p>
+    </footer>
+
+    <script>
+        // Questions and answers
+        const questions = [
+            { text: "Which psychometric property ensures that test items consistently measure the same construct?", options: ["a. Validity", "b. Reliability", "c. Standard Error", "d. Norming"], answer: "b" },
+            { text: "What is the primary purpose of content validity in test construction?", options: ["a. To predict future performance", "b. To ensure the test represents the target domain", "c. To compare scores across populations", "d. To eliminate systematic errors"], answer: "b" },
+            { text: "When selecting a test, which factor is MOST critical for ensuring fairness?", options: ["a. Cost-effectiveness", "b. Evidence of cultural fairness", "c. Length of administration", "d. Subjective scoring"], answer: "b" },
+            { text: "A test manual reports a reliability coefficient of 0.85. What does this value signify?", options: ["a. 85% of variance is true score", "b. High consistency in scores", "c. Low measurement error", "d. Both b and c"], answer: "d" },
+            { text: "Which term describes the standard deviation of measurement errors?", options: ["a. Variance", "b. Standard Error of Measurement (SEM)", "c. Confidence Interval", "d. Factor Loading"], answer: "b" },
+            { text: "Why is predictive validity crucial for aptitude tests?", options: ["a. It ensures test items are unbiased", "b. It demonstrates the test's ability to forecast future performance", "c. It measures internal consistency", "d. It reduces administration time"], answer: "b" },
+            { text: "How does a high Cronbach's alpha (α = 0.90) impact test interpretation?", options: ["a. Indicates heterogeneous items", "b. Suggests strong internal consistency", "c. Reflects poor item discrimination", "d. Requires test revision"], answer: "b" },
+            { text: "What is a key limitation of face validity?", options: ["a. It does not guarantee the test measures the intended construct", "b. It is statistically rigorous", "c. It correlates with criterion measures", "d. It requires expert judgment"], answer: "a" },
+            { text: "Why is the standard error of measurement (SEM) important?", options: ["a. It quantifies the precision of individual scores", "b. It determines test difficulty", "c. It establishes cutoff scores", "d. It identifies biased items"], answer: "a" },
+            { text: "How does construct underrepresentation threaten validity?", options: ["a. It fails to capture key aspects of the target construct", "b. It introduces cultural bias", "c. It inflates reliability coefficients", "d. It reduces test length"], answer: "a" },
+            { text: "A depression inventory has a test-retest reliability of 0.65. Should it be used for clinical diagnosis?", options: ["a. Yes, reliability is sufficient", "b. No, reliability should be ≥0.80 for clinical use", "c. Yes, validity compensates for low reliability", "d. No, only validity matters"], answer: "b" },
+            { text: "A job placement test has a criterion validity coefficient of 0.25. Is it useful?", options: ["a. No, coefficients <0.30 have limited utility", "b. Yes, all validity evidence is acceptable", "c. Yes, if combined with interviews", "d. No, only reliability matters"], answer: "a" },
+            { text: "A test's SEM is 3 points. If John scores 100, what is the 95% confidence interval?", options: ["a. 90–100", "b. 94–106", "c. 97–103", "d. 90–110"], answer: "b" },
+            { text: "A personality test has a split-half reliability of 0.75. Should it be revised?", options: ["a. Yes, aim for ≥0.80", "b. No, it is acceptable", "c. Only if validity is low", "d. Depends on test length"], answer: "a" },
+            { text: "An achievement test lacks evidence of discriminant validity. What is the risk?", options: ["a. It may measure unrelated constructs", "b. It will overpredict performance", "c. It ensures cultural fairness", "d. It reduces scoring errors"], answer: "a" },
+            { text: "A test manual reports a KR-20 of 0.60. What action is warranted?", options: ["a. Remove poorly discriminating items", "b. Increase administration time", "c. Use it for high-stakes decisions", "d. Ignore, as KR-20 is outdated"], answer: "a" },
+            { text: "A test has a floor effect. How does this affect interpretation?", options: ["a. Scores cluster at the lower end, limiting differentiation", "b. It improves reliability", "c. It indicates high difficulty", "d. No impact on validity"], answer: "a" },
+            { text: "A neuropsychological battery has inter-scorer reliability of κ = 0.45. Is this acceptable?", options: ["a. Yes, κ > 0.40 is adequate", "b. No, aim for κ ≥ 0.60", "c. Only if validity is high", "d. Depends on test purpose"], answer: "b" },
+            { text: "A test's manual lacks evidence of cross-cultural validity. What should you do?", options: ["a. Use alternative tests with cultural fairness data", "b. Proceed, as all tests are culture-free", "c. Adjust scores manually", "d. Ignore cultural factors"], answer: "a" },
+            { text: "A student's true score is 85 ± 5 (SEM). Which score range is plausible?", options: ["a. 80–90", "b. 75–95", "c. 85–95", "d. 70–100"], answer: "b" },
+            { text: "Two subtests correlate at r = 0.10. What does this suggest?", options: ["a. They measure unrelated constructs", "b. High convergent validity", "c. Redundant items", "d. Scoring errors"], answer: "a" },
+            { text: "A test's validity coefficient is 0.40. What percentage of variance is explained?", options: ["a. 40%", "b. 16%", "c. 60%", "d. 20%"], answer: "b" },
+            { text: "A norm-referenced test has a restricted range. How does this affect validity?", options: ["a. Reduces observed validity coefficients", "b. Increases reliability", "c. Improves fairness", "d. No effect"], answer: "a" },
+            { text: "A speed test has high internal consistency (α = 0.90). Is this appropriate?", options: ["a. No, speed tests should use test-retest reliability", "b. Yes, internal consistency is sufficient", "c. Only if validity is high", "d. Depends on test length"], answer: "a" },
+            { text: "A test's manual reports 'good' validity but 'poor' reliability. What should you conclude?", options: ["a. The test is flawed; reliability is a prerequisite for validity", "b. Validity compensates for reliability", "c. Use it for research only", "d. Ignore reliability"], answer: "a" },
+            { text: "A cutoff score yields 15% false positives. What does this mean?", options: ["a. 15% of passes are unqualified", "b. 15% of fails are qualified", "c. 85% of passes are qualified", "d. Both a and c"], answer: "a" },
+            { text: "A test has a SEM of 2. A score difference of 5 points is observed. Is this significant?", options: ["a. Yes", "b. No", "c. Depends on validity", "d. Only with a large sample"], answer: "a" },
+            { text: "A test's alternate forms correlation is 0.70. What does this imply?", options: ["a. Moderate equivalence between forms", "b. High internal consistency", "c. Poor test-retest reliability", "d. Invalid scoring"], answer: "a" },
+            { text: "A clinician observes inconsistent responses during testing. Which psychometric issue is MOST relevant?", options: ["a. Low reliability", "b. Response bias (e.g., random guessing)", "c. High validity", "d. Cultural loading"], answer: "b" },
+            { text: "A test's manual reports a skewed distribution. How might this affect norms?", options: ["a. Percentile ranks may misrepresent true ability", "b. Reliability increases", "c. Validity is unaffected", "d. SEM decreases"], answer: "a" },
+            { text: "A test's items have poor discrimination indices (0.10–0.20). What should be done?", options: ["a. Revise or remove items", "b. Increase test length", "c. Use stricter cutoff scores", "d. Ignore, as validity compensates"], answer: "a" },
+            { text: "A school uses a test with low predictive validity for admissions. What is the risk?", options: ["a. Unqualified students may be accepted", "b. High false-negative rates", "c. Improved fairness", "d. Reduced administrative costs"], answer: "a" },
+            { text: "A hiring test has adverse impact on a protected group. What psychometric property is compromised?", options: ["a. Fairness", "b. Reliability", "c. Content validity", "d. Standardization"], answer: "a" },
+            { text: "A test with high sensitivity (0.95) but low specificity (0.50) is used for diagnosis. What is the consequence?", options: ["a. High false-positive rate", "b. High false-negative rate", "c. Improved accuracy", "d. Reduced SEM"], answer: "a" },
+            { text: "A test developer uses only college students for norming. What threat arises?", options: ["a. Limited generalizability", "b. High reliability", "c. Improved validity", "d. Reduced cultural bias"], answer: "a" },
+            { text: "A test lacks cross-validation studies. What is the risk?", options: ["a. Validity shrinkage in new populations", "b. Increased reliability", "c. Improved fairness", "d. Faster administration"], answer: "a" },
+            { text: "A test uses Likert scales but reports parametric statistics. What assumption is violated?", options: ["a. Interval-level data", "b. Normal distribution", "c. Homogeneity of variance", "d. Independence of observations"], answer: "a" },
+            { text: "A test manual omits details about scorer training. What principle is neglected?", options: ["a. Standardization", "b. Validity", "c. Reliability", "d. Fairness"], answer: "a" },
+            { text: "A test's items were selected based on expert judgment alone. What validity evidence is missing?", options: ["a. Empirical", "b. Face validity", "c. Content validity", "d. Cultural fairness"], answer: "a" },
+        ];
+
+        // Display questions on the page
+        const questionsDiv = document.getElementById('questions');
+        questions.forEach((question, index) => {
+            questionsDiv.innerHTML += `
+                <div class="question">
+                    <p>${index + 1}. ${question.text}</p>
+                    <div class="options">
+                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${index}"></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('submit').addEventListener('click', () => {
+            let score = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+
+                // Check if the answer is correct
+                const feedbackDiv = document.getElementById(`feedback-${i}`);
+                if (userAnswer === questions[i].answer) {
+                    score++;
+                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                } else {
+                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                }
+            }
+
+            // Display total score
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
+        });
+    </script>
+</body>
+</html>

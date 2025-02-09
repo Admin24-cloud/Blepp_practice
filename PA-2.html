@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B</title>
+    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        #questions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Research Methods and Statistics</h1>
+    <div id="questions"></div>
+    <button id="submit">Submit Answers</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <footer>
+        <p>Created by Dan_delion</p>
+    </footer>
+
+    <script>
+        // Questions and answers
+        const questions = [
+            { text: "Which statistical test is appropriate for comparing means across three independent groups?", options: ["a. Pearson r", "b. One-way ANOVA", "c. Chi-square", "d. Spearman rho"], answer: "b" },
+            { text: "What measure evaluates the internal consistency of a test with dichotomous items?", options: ["a. Test-retest reliability", "b. KR-20", "c. Factor analysis", "d. Standard error"], answer: "b" },
+            { text: "Which statistic is used to assess inter-rater agreement for categorical data?", options: ["a. Pearson r", "b. Cohen's kappa", "c. Cronbach's alpha", "d. T-test"], answer: "b" },
+            { text: "What is the purpose of a pilot study in test development?", options: ["a. To finalize test norms", "b. To refine test items and procedures", "c. To calculate validity coefficients", "d. To administer the test to large populations"], answer: "b" },
+            { text: "A factor loading of 0.75 on a scale indicates:", options: ["a. Poor item discrimination", "b. Strong association with the construct", "c. Low reliability", "d. High measurement error"], answer: "b" },
+            { text: "What does a p-value < 0.05 signify in hypothesis testing?", options: ["a. The result is statistically significant", "b. The null hypothesis is true", "c. The effect size is large", "d. The sample size is adequate"], answer: "a" },
+            { text: "During item analysis, an item has a difficulty index of 0.20. What action is warranted?", options: ["a. Retain the item", "b. Revise the item (too difficult)", "c. Use it for high-stakes decisions", "d. Convert it to a Likert scale"], answer: "b" },
+            { text: "Which method is BEST to establish content validity?", options: ["a. Factor analysis", "b. Expert panel review", "c. Test-retest correlation", "d. Criterion-related studies"], answer: "b" },
+            { text: "A test developer wants to reduce response bias. Which format is MOST suitable?", options: ["a. Forced-choice items", "b. Open-ended questions", "c. True/False items", "d. Single-answer multiple choice"], answer: "a" },
+            { text: "Which statistic evaluates item discrimination for a norm-referenced test?", options: ["a. Mean", "b. Point-biserial correlation", "c. Standard deviation", "d. Chi-square"], answer: "b" },
+            { text: "A test's norms are based on urban populations. What threat arises for rural test-takers?", options: ["a. Limited representativeness", "b. High reliability", "c. Improved validity", "d. Reduced SEM"], answer: "a" },
+            { text: "Which sampling method ensures proportional representation of demographics?", options: ["a. Convenience sampling", "b. Stratified random sampling", "c. Snowball sampling", "d. Purposive sampling"], answer: "b" },
+            { text: "A test manual reports a mean of 100 and SD of 15. What percentile corresponds to a score of 115?", options: ["a. 50th", "b. 84th", "c. 98th", "d. 16th"], answer: "b" },
+            { text: "What is the purpose of co-norming in test standardization?", options: ["a. To compare scores across different tests", "b. To reduce administration time", "c. To eliminate cultural bias", "d. To improve face validity"], answer: "a" },
+            { text: "A test's Cronbach's alpha drops from 0.85 to 0.65 after removing five items. What does this imply?", options: ["a. The removed items contributed to internal consistency", "b. The test is now more reliable", "c. Validity is compromised", "d. Norms need updating"], answer: "a" },
+            { text: "A test normed on adults is used for adolescents. What is the PRIMARY concern?", options: ["a. Developmental differences invalidate norms", "b. Improved sensitivity", "c. Reduced administration time", "d. Higher reliability"], answer: "a" },
+            { text: "A study finds a correlation of r = 0.50 between test scores and job performance. What is the coefficient of determination?", options: ["a. 0.50", "b. 0.25", "c. 0.75", "d. 1.00"], answer: "b" },
+            { text: "A researcher uses a t-test to compare means across four groups. Is this appropriate?", options: ["a. Yes, t-tests are flexible", "b. No, ANOVA should be used", "c. Only if sample sizes are equal", "d. Depends on the effect size"], answer: "b" },
+            { text: "A test manual reports face validity as the sole validity evidence. What is the critique?", options: ["a. Face validity alone is insufficient for scientific rigor", "b. It ensures cultural fairness", "c. It is ideal for clinical use", "d. No critique; face validity is adequate"], answer: "a" },
+            { text: "A study uses convenience sampling for test standardization. What limitation arises?", options: ["a. Results lack generalizability", "b. Increased internal validity", "c. Reduced measurement error", "d. Improved reliability"], answer: "a" },
+        ];
+
+        // Display questions on the page
+        const questionsDiv = document.getElementById('questions');
+        questions.forEach((question, index) => {
+            questionsDiv.innerHTML += `
+                <div class="question">
+                    <p>${index + 1}. ${question.text}</p>
+                    <div class="options">
+                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${index}"></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('submit').addEventListener('click', () => {
+            let score = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+
+                // Check if the answer is correct
+                const feedbackDiv = document.getElementById(`feedback-${i}`);
+                if (userAnswer === questions[i].answer) {
+                    score++;
+                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                } else {
+                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                }
+            }
+
+            // Display total score
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
+        });
+    </script>
+</body>
+</html>
+
+
+

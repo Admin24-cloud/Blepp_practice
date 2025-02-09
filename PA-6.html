@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F</title>
+    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        #questions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ethical Principles and Standards of Practice</h1>
+    <div id="questions"></div>
+    <button id="submit">Submit Answers</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <footer>
+        <p>Created by Dan_delion</p>
+    </footer>
+
+    <script>
+        // Questions and answers
+        const questions = [
+            { text: "Which ethical principle mandates that test results should not be shared without explicit consent?", options: ["a. Confidentiality", "b. Validity", "c. Standardization", "d. Reliability"], answer: "a" },
+            { text: "What principle requires psychologists to interpret test scores within the context of the client's background?", options: ["a. Fairness and cultural sensitivity", "b. Informed consent", "c. Criterion-referencing", "d. Construct validity"], answer: "a" },
+            { text: "Which principle ensures clients understand the purpose and implications of testing?", options: ["a. Informed consent", "b. Test-retest reliability", "c. Norming", "d. Item discrimination"], answer: "a" },
+            { text: "What ethical standard prohibits using outdated or unvalidated tests in high-stakes decisions?", options: ["a. Competence in test selection", "b. Scoring transparency", "c. Administrative efficiency", "d. Cultural neutrality"], answer: "a" },
+            { text: "A psychologist shares a client's test results on social media. Why is this unethical?", options: ["a. Violates confidentiality and privacy rights", "b. Enhances public awareness", "c. Promotes test validity", "d. Encourages transparency"], answer: "a" },
+            { text: "Using a personality test normed on adults to assess adolescents is unethical because:", options: ["a. Developmental differences invalidate norms and interpretations", "b. It saves time and resources", "c. Adolescents prefer adult tests", "d. It ensures higher reliability"], answer: "a" },
+            { text: "Administering a test without explaining its purpose violates:", options: ["a. Informed consent", "b. Scoring accuracy", "c. Cultural fairness", "d. Test-retest protocols"], answer: "a" },
+            { text: "A client refuses to sign a consent form for testing. What should you do?", options: ["a. Respect their autonomy and halt testing", "b. Proceed without consent", "c. Alter the test format", "d. Report them to authorities"], answer: "a" },
+            { text: "A colleague asks for access to raw test data of your client. How should you respond?", options: ["a. Decline unless authorized by the client or legally mandated", "b. Share the data immediately", "c. Provide partial data", "d. Ignore the request"], answer: "a" },
+            { text: "A school uses a culturally biased test for admissions. What action is ethical?", options: ["a. Advocate for a fairer assessment tool", "b. Adjust scores manually", "c. Proceed to avoid delays", "d. Blame the test developers"], answer: "a" },
+            { text: "A client's test results indicate risk of self-harm. What is your FIRST ethical obligation?", options: ["a. Ensure client safety and seek emergency intervention", "b. Archive the results", "c. Continue testing", "d. Share results with family without consent"], answer: "a" },
+            { text: "You discover a scoring error in a high-stakes licensure exam. What should you do?", options: ["a. Correct the error and retract invalid scores", "b. Ignore it to avoid backlash", "c. Blame the test-taker", "d. Adjust norms retroactively"], answer: "a" },
+            { text: "A supervisor pressures you to falsify test data to meet quotas. How do you respond?", options: ["a. Refuse and report the misconduct", "b. Comply to maintain job security", "c. Alter only minor data", "d. Seek legal loopholes"], answer: "a" },
+            { text: "A non-English-speaking client is assessed with an untranslated test. What ethical issue arises?", options: ["a. Violation of cultural fairness and validity", "b. Enhanced reliability", "c. Improved standardization", "d. Ethical compliance"], answer: "a" },
+            { text: "Which strategy BEST prevents breaches of confidentiality in test administration?", options: ["a. Secure digital storage and restricted access to records", "b. Sharing results publicly for transparency", "c. Using informal scoring methods", "d. Avoiding written reports"], answer: "a" },
+            { text: "How can psychologists ensure culturally fair test interpretations?", options: ["a. Use norms representative of the client's background", "b. Ignore cultural factors to standardize results", "c. Rely solely on self-report data", "d. Avoid discussing results with clients"], answer: "a" },
+            { text: "A company uses the MBTI for layoffs without validity evidence. Is this ethical?", options: ["a. No—misuse of a non-predictive tool harms employees", "b. Yes—MBTI is popular", "c. Only if employees consent", "d. Ethical if norms are adjusted"], answer: "a" },
+            { text: "A psychologist uses a client's test data in a workshop without anonymizing it. Ethical?", options: ["a. No—violates confidentiality", "b. Yes—public education is key", "c. Ethical if the client is famous", "d. Only if data is aggregated"], answer: "a" },
+            { text: "A clinician interprets a low IQ score as evidence of lifelong disability without considering socio-economic factors. Ethical?", options: ["a. No—fails to account for contextual influences", "b. Yes—IQ tests are objective", "c. Ethical if the test is reliable", "d. Only if the client agrees"], answer: "a" },
+        ];
+
+        // Display questions on the page
+        const questionsDiv = document.getElementById('questions');
+        questions.forEach((question, index) => {
+            questionsDiv.innerHTML += `
+                <div class="question">
+                    <p>${index + 1}. ${question.text}</p>
+                    <div class="options">
+                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${index}"></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('submit').addEventListener('click', () => {
+            let score = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+
+                // Check if the answer is correct
+                const feedbackDiv = document.getElementById(`feedback-${i}`);
+                if (userAnswer === questions[i].answer) {
+                    score++;
+                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                } else {
+                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                }
+            }
+
+            // Display total score
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
+        });
+    </script>
+</body>
+</html>
+
+
+

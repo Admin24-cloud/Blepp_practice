@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E</title>
+    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        #questions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Administration, Scoring, Interpretation, and Usage</h1>
+    <div id="questions"></div>
+    <button id="submit">Submit Answers</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <footer>
+        <p>Created by Dan_delion</p>
+    </footer>
+
+    <script>
+        // Questions and answers
+        const questions = [
+            { text: "A clinician uses the MMPI-2 to assess career interests in a high school student. What error occurred?", options: ["a. Inappropriate test selection", "b. Administration bias", "c. Scoring miscalculation", "d. Cultural adaptation"], answer: "a" },
+            { text: "A test administrator skips standardized instructions to save time. What error is this?", options: ["a. Violation of administration protocol", "b. Scoring inconsistency", "c. Interpretation bias", "d. Ethical breach"], answer: "a" },
+            { text: "A scorer assigns 2 points instead of 1 for a correct response on the Stanford-Binet. What error occurred?", options: ["a. Scoring inaccuracy", "b. Administration bias", "c. Test selection error", "d. Cultural bias"], answer: "a" },
+            { text: "How does failing to time a speed test affect results?", options: ["a. Invalidates reliability and validity", "b. Improves cultural fairness", "c. Reduces scoring errors", "d. Enhances interpretation"], answer: "a" },
+            { text: "A misapplied formula for KR-20 leads to overestimated reliability. What is the consequence?", options: ["a. False confidence in test consistency", "b. Improved predictive validity", "c. Ethical compliance", "d. Reduced administration time"], answer: "a" },
+            { text: "Interpreting a low score on the Rorschach as 'psychopathy' without corroborating evidence risks:", options: ["a. Misdiagnosis and harm", "b. Enhanced validity", "c. Cultural fairness", "d. Ethical integrity"], answer: "a" },
+            { text: "A client speaks limited English. What is the BEST action?", options: ["a. Use a culturally adapted/nonverbal test", "b. Proceed with the MMPI-2", "c. Skip validity scales", "d. Shorten the test"], answer: "a" },
+            { text: "A school insists on using an IQ test with outdated norms. How should you respond?", options: ["a. Advocate for updated norms to ensure accuracy", "b. Administer the test as requested", "c. Adjust scores manually", "d. Ignore the issue"], answer: "a" },
+            { text: "A fire alarm interrupts testing. What should you do?", options: ["a. Reschedule the session", "b. Continue testing immediately", "c. Guess the remaining answers", "d. Skip affected sections"], answer: "a" },
+            { text: "A client refuses to answer sensitive items on the PAI. How should you proceed?", options: ["a. Respect their autonomy and note omissions", "b. Force compliance", "c. Alter the scoring", "d. Report them to authorities"], answer: "a" },
+            { text: "A raw score of 75 on the WAIS-IV yields a percentile rank of 99. What should you suspect?", options: ["a. Scoring error", "b. High intelligence", "c. Cultural bias", "d. Normal variation"], answer: "a" },
+            { text: "Two scorers disagree on a Rorschach response. How to resolve this?", options: ["a. Use consensus coding or consult guidelines", "b. Average the scores", "c. Discard the response", "d. Assume the first scorer is correct"], answer: "a" },
+            { text: "A client's MMPI-2 profile shows elevated F and K scales. What should you prioritize?", options: ["a. Assess response validity before interpretation", "b. Diagnose schizophrenia", "c. Recommend medication", "d. Ignore the scales"], answer: "a" },
+            { text: "A child's WISC-V score drops 20 points after retesting. What is the FIRST step?", options: ["a. Check for administration/scoring errors", "b. Diagnose intellectual disability", "c. Blame cultural bias", "d. Discard both scores"], answer: "a" },
+            { text: "A client completes a 60-minute test in 20 minutes with perfect accuracy. What anomaly exists?", options: ["a. Possible test misunderstanding or rushing", "b. High cognitive ability", "c. Scoring error", "d. Cultural adaptation"], answer: "a" },
+            { text: "A neuropsychological battery shows inconsistent memory scores. What factor might explain this?", options: ["a. Fluctuating attention during testing", "b. High reliability", "c. Validity scales", "d. Normative strengths"], answer: "a" },
+            { text: "A company uses the MBTI for layoffs. What ethical anomaly arises?", options: ["a. Misuse of a non-validated tool for high-stakes decisions", "b. Enhanced fairness", "c. Improved employee morale", "d. Compliance with standards"], answer: "a" },
+            { text: "Is the Stanford-Binet appropriate for assessing giftedness in a culturally diverse population?", options: ["a. Yes, if norms include diverse samples and language adaptations", "b. No, it is only for clinical use", "c. Only for children under 10", "d. No, it lacks validity scales"], answer: "a" },
+            { text: "A rural clinic uses online tests with unreliable internet. What is the impact?", options: ["a. Administration errors and invalid results", "b. Improved accessibility", "c. Enhanced scoring accuracy", "d. Ethical compliance"], answer: "a" },
+            { text: "A therapist interprets a single low score on the Vineland as global impairment. What is the critique?", options: ["a. Overgeneralization without considering other data", "b. Valid interpretation", "c. Cultural sensitivity", "d. Ethical rigor"], answer: "a" },
+        ];
+
+        // Display questions on the page
+        const questionsDiv = document.getElementById('questions');
+        questions.forEach((question, index) => {
+            questionsDiv.innerHTML += `
+                <div class="question">
+                    <p>${index + 1}. ${question.text}</p>
+                    <div class="options">
+                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${index}"></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('submit').addEventListener('click', () => {
+            let score = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+
+                // Check if the answer is correct
+                const feedbackDiv = document.getElementById(`feedback-${i}`);
+                if (userAnswer === questions[i].answer) {
+                    score++;
+                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                } else {
+                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                }
+            }
+
+            // Display total score
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
+        });
+    </script>
+</body>
+</html>
+
+
+
