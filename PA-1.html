@@ -3,175 +3,2664 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A</title>
-    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <title>Practice - Psych Ass</title>
+    <link rel="icon" href="human-brain.png" type="image/png">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            visibility: hidden;
+            display: none;
+        }
+
+        .checkbox-wrapper *,
+        .checkbox-wrapper ::after,
+        .checkbox-wrapper ::before {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .checkbox-wrapper .label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-wrapper .check {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            opacity: 0;
+        }
+
+        .checkbox-wrapper .label svg {
+            vertical-align: middle;
+        }
+
+        .checkbox-wrapper .path1 {
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            transition: .5s stroke-dashoffset;
+            opacity: 0;
+        }
+
+        .checkbox-wrapper .check:checked + label svg g path {
+            stroke-dashoffset: 0;
+            opacity: 1;
+        }
+
+        /* Additional styles for quiz layout */
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
             padding: 20px;
+            font-family: Arial, sans-serif;
         }
-        h1 {
-            text-align: center;
-            color: #4a90e2;
-        }
-        #questions {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
+
         .question {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 10px;
+            margin-bottom: 30px;
         }
+
+        .question h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
         .options {
             margin-left: 20px;
         }
-        input[type="radio"] {
-            margin-right: 10px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #357ab8;
-        }
-        #results {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .correct {
-            color: green;
-            font-weight: bold;
-        }
-        .incorrect {
-            color: red;
-            font-weight: bold;
-        }
-        .score {
-            font-size: 20px;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        .feedback {
-            margin-top: 5px;
-            font-weight: bold;
-        }
-        footer {
+
+        .quiz-controls {
             text-align: center;
+            margin-top: 30px;
+        }
+
+        .submit-btn, .review-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .submit-btn:hover, .review-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn:active, .review-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .score-display {
             margin-top: 20px;
-            font-size: 14px;
-            color: #777;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        
+        .feedback.show {
+            max-height: 50px;
+            opacity: 1;
+            margin-top: 10px;
+        }
+
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+
+        .review-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        .correct-answer {
+            background-color: #dff0d8;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #d6e9c6;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #ddd;
         }
     </style>
+    <script>
+        function handleCheck(questionNumber, checkboxId) {
+            // Get all checkboxes for this question
+            const checkboxes = document.querySelectorAll(`[id^="q${questionNumber}-"]`);
+            
+            // Uncheck all other checkboxes in the same question
+            checkboxes.forEach(checkbox => {
+                if (checkbox.id !== checkboxId) {
+                    checkbox.checked = false;
+                }
+            });
+        }
+    </script>
 </head>
 <body>
-    <h1>Psychometric Properties and Principles</h1>
-    <div id="questions"></div>
-    <button id="submit">Submit Answers</button>
-    <div id="results" style="margin-top: 20px;"></div>
-
-    <footer>
-        <p>Created by Dan_delion</p>
-    </footer>
-
-    <script>
-        // Questions and answers
-        const questions = [
-            { text: "Which psychometric property ensures that test items consistently measure the same construct?", options: ["a. Validity", "b. Reliability", "c. Standard Error", "d. Norming"], answer: "b" },
-            { text: "What is the primary purpose of content validity in test construction?", options: ["a. To predict future performance", "b. To ensure the test represents the target domain", "c. To compare scores across populations", "d. To eliminate systematic errors"], answer: "b" },
-            { text: "When selecting a test, which factor is MOST critical for ensuring fairness?", options: ["a. Cost-effectiveness", "b. Evidence of cultural fairness", "c. Length of administration", "d. Subjective scoring"], answer: "b" },
-            { text: "A test manual reports a reliability coefficient of 0.85. What does this value signify?", options: ["a. 85% of variance is true score", "b. High consistency in scores", "c. Low measurement error", "d. Both b and c"], answer: "d" },
-            { text: "Which term describes the standard deviation of measurement errors?", options: ["a. Variance", "b. Standard Error of Measurement (SEM)", "c. Confidence Interval", "d. Factor Loading"], answer: "b" },
-            { text: "Why is predictive validity crucial for aptitude tests?", options: ["a. It ensures test items are unbiased", "b. It demonstrates the test's ability to forecast future performance", "c. It measures internal consistency", "d. It reduces administration time"], answer: "b" },
-            { text: "How does a high Cronbach's alpha (α = 0.90) impact test interpretation?", options: ["a. Indicates heterogeneous items", "b. Suggests strong internal consistency", "c. Reflects poor item discrimination", "d. Requires test revision"], answer: "b" },
-            { text: "What is a key limitation of face validity?", options: ["a. It does not guarantee the test measures the intended construct", "b. It is statistically rigorous", "c. It correlates with criterion measures", "d. It requires expert judgment"], answer: "a" },
-            { text: "Why is the standard error of measurement (SEM) important?", options: ["a. It quantifies the precision of individual scores", "b. It determines test difficulty", "c. It establishes cutoff scores", "d. It identifies biased items"], answer: "a" },
-            { text: "How does construct underrepresentation threaten validity?", options: ["a. It fails to capture key aspects of the target construct", "b. It introduces cultural bias", "c. It inflates reliability coefficients", "d. It reduces test length"], answer: "a" },
-            { text: "A depression inventory has a test-retest reliability of 0.65. Should it be used for clinical diagnosis?", options: ["a. Yes, reliability is sufficient", "b. No, reliability should be ≥0.80 for clinical use", "c. Yes, validity compensates for low reliability", "d. No, only validity matters"], answer: "b" },
-            { text: "A job placement test has a criterion validity coefficient of 0.25. Is it useful?", options: ["a. No, coefficients <0.30 have limited utility", "b. Yes, all validity evidence is acceptable", "c. Yes, if combined with interviews", "d. No, only reliability matters"], answer: "a" },
-            { text: "A test's SEM is 3 points. If John scores 100, what is the 95% confidence interval?", options: ["a. 90–100", "b. 94–106", "c. 97–103", "d. 90–110"], answer: "b" },
-            { text: "A personality test has a split-half reliability of 0.75. Should it be revised?", options: ["a. Yes, aim for ≥0.80", "b. No, it is acceptable", "c. Only if validity is low", "d. Depends on test length"], answer: "a" },
-            { text: "An achievement test lacks evidence of discriminant validity. What is the risk?", options: ["a. It may measure unrelated constructs", "b. It will overpredict performance", "c. It ensures cultural fairness", "d. It reduces scoring errors"], answer: "a" },
-            { text: "A test manual reports a KR-20 of 0.60. What action is warranted?", options: ["a. Remove poorly discriminating items", "b. Increase administration time", "c. Use it for high-stakes decisions", "d. Ignore, as KR-20 is outdated"], answer: "a" },
-            { text: "A test has a floor effect. How does this affect interpretation?", options: ["a. Scores cluster at the lower end, limiting differentiation", "b. It improves reliability", "c. It indicates high difficulty", "d. No impact on validity"], answer: "a" },
-            { text: "A neuropsychological battery has inter-scorer reliability of κ = 0.45. Is this acceptable?", options: ["a. Yes, κ > 0.40 is adequate", "b. No, aim for κ ≥ 0.60", "c. Only if validity is high", "d. Depends on test purpose"], answer: "b" },
-            { text: "A test's manual lacks evidence of cross-cultural validity. What should you do?", options: ["a. Use alternative tests with cultural fairness data", "b. Proceed, as all tests are culture-free", "c. Adjust scores manually", "d. Ignore cultural factors"], answer: "a" },
-            { text: "A student's true score is 85 ± 5 (SEM). Which score range is plausible?", options: ["a. 80–90", "b. 75–95", "c. 85–95", "d. 70–100"], answer: "b" },
-            { text: "Two subtests correlate at r = 0.10. What does this suggest?", options: ["a. They measure unrelated constructs", "b. High convergent validity", "c. Redundant items", "d. Scoring errors"], answer: "a" },
-            { text: "A test's validity coefficient is 0.40. What percentage of variance is explained?", options: ["a. 40%", "b. 16%", "c. 60%", "d. 20%"], answer: "b" },
-            { text: "A norm-referenced test has a restricted range. How does this affect validity?", options: ["a. Reduces observed validity coefficients", "b. Increases reliability", "c. Improves fairness", "d. No effect"], answer: "a" },
-            { text: "A speed test has high internal consistency (α = 0.90). Is this appropriate?", options: ["a. No, speed tests should use test-retest reliability", "b. Yes, internal consistency is sufficient", "c. Only if validity is high", "d. Depends on test length"], answer: "a" },
-            { text: "A test's manual reports 'good' validity but 'poor' reliability. What should you conclude?", options: ["a. The test is flawed; reliability is a prerequisite for validity", "b. Validity compensates for reliability", "c. Use it for research only", "d. Ignore reliability"], answer: "a" },
-            { text: "A cutoff score yields 15% false positives. What does this mean?", options: ["a. 15% of passes are unqualified", "b. 15% of fails are qualified", "c. 85% of passes are qualified", "d. Both a and c"], answer: "a" },
-            { text: "A test has a SEM of 2. A score difference of 5 points is observed. Is this significant?", options: ["a. Yes", "b. No", "c. Depends on validity", "d. Only with a large sample"], answer: "a" },
-            { text: "A test's alternate forms correlation is 0.70. What does this imply?", options: ["a. Moderate equivalence between forms", "b. High internal consistency", "c. Poor test-retest reliability", "d. Invalid scoring"], answer: "a" },
-            { text: "A clinician observes inconsistent responses during testing. Which psychometric issue is MOST relevant?", options: ["a. Low reliability", "b. Response bias (e.g., random guessing)", "c. High validity", "d. Cultural loading"], answer: "b" },
-            { text: "A test's manual reports a skewed distribution. How might this affect norms?", options: ["a. Percentile ranks may misrepresent true ability", "b. Reliability increases", "c. Validity is unaffected", "d. SEM decreases"], answer: "a" },
-            { text: "A test's items have poor discrimination indices (0.10–0.20). What should be done?", options: ["a. Revise or remove items", "b. Increase test length", "c. Use stricter cutoff scores", "d. Ignore, as validity compensates"], answer: "a" },
-            { text: "A school uses a test with low predictive validity for admissions. What is the risk?", options: ["a. Unqualified students may be accepted", "b. High false-negative rates", "c. Improved fairness", "d. Reduced administrative costs"], answer: "a" },
-            { text: "A hiring test has adverse impact on a protected group. What psychometric property is compromised?", options: ["a. Fairness", "b. Reliability", "c. Content validity", "d. Standardization"], answer: "a" },
-            { text: "A test with high sensitivity (0.95) but low specificity (0.50) is used for diagnosis. What is the consequence?", options: ["a. High false-positive rate", "b. High false-negative rate", "c. Improved accuracy", "d. Reduced SEM"], answer: "a" },
-            { text: "A test developer uses only college students for norming. What threat arises?", options: ["a. Limited generalizability", "b. High reliability", "c. Improved validity", "d. Reduced cultural bias"], answer: "a" },
-            { text: "A test lacks cross-validation studies. What is the risk?", options: ["a. Validity shrinkage in new populations", "b. Increased reliability", "c. Improved fairness", "d. Faster administration"], answer: "a" },
-            { text: "A test uses Likert scales but reports parametric statistics. What assumption is violated?", options: ["a. Interval-level data", "b. Normal distribution", "c. Homogeneity of variance", "d. Independence of observations"], answer: "a" },
-            { text: "A test manual omits details about scorer training. What principle is neglected?", options: ["a. Standardization", "b. Validity", "c. Reliability", "d. Fairness"], answer: "a" },
-            { text: "A test's items were selected based on expert judgment alone. What validity evidence is missing?", options: ["a. Empirical", "b. Face validity", "c. Content validity", "d. Cultural fairness"], answer: "a" },
-        ];
-
-        // Display questions on the page
-        const questionsDiv = document.getElementById('questions');
-        questions.forEach((question, index) => {
-            questionsDiv.innerHTML += `
-                <div class="question">
-                    <p>${index + 1}. ${question.text}</p>
-                    <div class="options">
-                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
-                    </div>
-                    <div class="feedback" id="feedback-${index}"></div>
+    <div class="quiz-container">
+        <div class="question">
+            <h3>1. Which psychometric property ensures that test items consistently measure the same construct?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-a" onclick="handleCheck(1, 'q1-a')">
+                    <label for="q1-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Validity</span>
+                    </label>
                 </div>
-            `;
-        });
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-b" onclick="handleCheck(1, 'q1-b')">
+                    <label for="q1-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-c" onclick="handleCheck(1, 'q1-c')">
+                    <label for="q1-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Standard Error</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-d" onclick="handleCheck(1, 'q1-d')">
+                    <label for="q1-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Norming</span>
+                    </label>
+                </div>
+            </div>
+        </div>
 
-        document.getElementById('submit').addEventListener('click', () => {
+        <div class="question">
+            <h3>2. What is the primary purpose of content validity in test construction?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-a" onclick="handleCheck(2, 'q2-a')">
+                    <label for="q2-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. To predict future performance</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-b" onclick="handleCheck(2, 'q2-b')">
+                    <label for="q2-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. To ensure the test represents the target domain</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-c" onclick="handleCheck(2, 'q2-c')">
+                    <label for="q2-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. To compare scores across populations</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-d" onclick="handleCheck(2, 'q2-d')">
+                    <label for="q2-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. To eliminate systematic errors</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>3. When selecting a test, which factor is MOST critical for ensuring fairness?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-a" onclick="handleCheck(3, 'q3-a')">
+                    <label for="q3-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Cost-effectiveness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-b" onclick="handleCheck(3, 'q3-b')">
+                    <label for="q3-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Evidence of cultural fairness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-c" onclick="handleCheck(3, 'q3-c')">
+                    <label for="q3-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Length of administration</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-d" onclick="handleCheck(3, 'q3-d')">
+                    <label for="q3-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Subjective scoring</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>4. A test manual reports a reliability coefficient of 0.85. What does this value signify?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-a" onclick="handleCheck(4, 'q4-a')">
+                    <label for="q4-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. 85% of variance is true score</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-b" onclick="handleCheck(4, 'q4-b')">
+                    <label for="q4-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. High consistency in scores</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-c" onclick="handleCheck(4, 'q4-c')">
+                    <label for="q4-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Low measurement error</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-d" onclick="handleCheck(4, 'q4-d')">
+                    <label for="q4-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Both b and c</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>5. Which term describes the standard deviation of measurement errors?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-a" onclick="handleCheck(5, 'q5-a')">
+                    <label for="q5-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Variance</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-b" onclick="handleCheck(5, 'q5-b')">
+                    <label for="q5-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Standard Error of Measurement (SEM)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-c" onclick="handleCheck(5, 'q5-c')">
+                    <label for="q5-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Confidence Interval</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-d" onclick="handleCheck(5, 'q5-d')">
+                    <label for="q5-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Factor Loading</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>6. Why is predictive validity crucial for aptitude tests?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-a" onclick="handleCheck(6, 'q6-a')">
+                    <label for="q6-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. It ensures test items are unbiased</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-b" onclick="handleCheck(6, 'q6-b')">
+                    <label for="q6-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. It demonstrates the test's ability to forecast future performance</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-c" onclick="handleCheck(6, 'q6-c')">
+                    <label for="q6-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. It measures internal consistency</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-d" onclick="handleCheck(6, 'q6-d')">
+                    <label for="q6-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. It reduces administration time</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>7. How does a high Cronbach's alpha (α = 0.90) impact test interpretation?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-a" onclick="handleCheck(7, 'q7-a')">
+                    <label for="q7-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Indicates heterogeneous items</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-b" onclick="handleCheck(7, 'q7-b')">
+                    <label for="q7-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Suggests strong internal consistency</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-c" onclick="handleCheck(7, 'q7-c')">
+                    <label for="q7-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Reflects poor item discrimination</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-d" onclick="handleCheck(7, 'q7-d')">
+                    <label for="q7-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Requires test revision</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>8. What is a key limitation of face validity?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-a" onclick="handleCheck(8, 'q8-a')">
+                    <label for="q8-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. It does not guarantee the test measures the intended construct</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-b" onclick="handleCheck(8, 'q8-b')">
+                    <label for="q8-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. It is statistically rigorous</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-c" onclick="handleCheck(8, 'q8-c')">
+                    <label for="q8-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. It correlates with criterion measures</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-d" onclick="handleCheck(8, 'q8-d')">
+                    <label for="q8-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. It requires expert judgment</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>9. Why is the standard error of measurement (SEM) important?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-a" onclick="handleCheck(9, 'q9-a')">
+                    <label for="q9-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. It quantifies the precision of individual scores</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-b" onclick="handleCheck(9, 'q9-b')">
+                    <label for="q9-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. It determines test difficulty</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-c" onclick="handleCheck(9, 'q9-c')">
+                    <label for="q9-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. It establishes cutoff scores</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-d" onclick="handleCheck(9, 'q9-d')">
+                    <label for="q9-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. It identifies biased items</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 10 -->
+        <div class="question">
+            <h3>10. How does construct underrepresentation threaten validity?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-a" onclick="handleCheck(10, 'q10-a')">
+                    <label for="q10-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. It fails to capture key aspects of the target construct</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-b" onclick="handleCheck(10, 'q10-b')">
+                    <label for="q10-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. It introduces cultural bias</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-c" onclick="handleCheck(10, 'q10-c')">
+                    <label for="q10-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. It inflates reliability coefficients</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-d" onclick="handleCheck(10, 'q10-d')">
+                    <label for="q10-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. It reduces test length</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 11 -->
+        <div class="question">
+            <h3>11. A depression inventory has a test-retest reliability of 0.65. Should it be used for clinical diagnosis?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-a" onclick="handleCheck(11, 'q11-a')">
+                    <label for="q11-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Yes, reliability is sufficient</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-b" onclick="handleCheck(11, 'q11-b')">
+                    <label for="q11-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. No, reliability should be ≥0.80 for clinical use</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-c" onclick="handleCheck(11, 'q11-c')">
+                    <label for="q11-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Yes, validity compensates for low reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-d" onclick="handleCheck(11, 'q11-d')">
+                    <label for="q11-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. No, only validity matters</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 12 -->
+        <div class="question">
+            <h3>12. A job placement test has a criterion validity coefficient of 0.25. Is it useful?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-a" onclick="handleCheck(12, 'q12-a')">
+                    <label for="q12-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. No, coefficients &lt;0.30 have limited utility</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-b" onclick="handleCheck(12, 'q12-b')">
+                    <label for="q12-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Yes, all validity evidence is acceptable</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-c" onclick="handleCheck(12, 'q12-c')">
+                    <label for="q12-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Yes, if combined with interviews</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-d" onclick="handleCheck(12, 'q12-d')">
+                    <label for="q12-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. No, only reliability matters</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 13 -->
+        <div class="question">
+            <h3>13. A test's SEM is 3 points. If John scores 100, what is the 95% confidence interval?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-a" onclick="handleCheck(13, 'q13-a')">
+                    <label for="q13-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. 90-100</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-b" onclick="handleCheck(13, 'q13-b')">
+                    <label for="q13-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. 94–106</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-c" onclick="handleCheck(13, 'q13-c')">
+                    <label for="q13-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. 97–103</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-d" onclick="handleCheck(13, 'q13-d')">
+                    <label for="q13-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. 90–110</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 14 -->
+        <div class="question">
+            <h3>14. A personality test has a split-half reliability of 0.75. Should it be revised?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-a" onclick="handleCheck(14, 'q14-a')">
+                    <label for="q14-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Yes, aim for ≥0.80</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-b" onclick="handleCheck(14, 'q14-b')">
+                    <label for="q14-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. No, it is acceptable</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-c" onclick="handleCheck(14, 'q14-c')">
+                    <label for="q14-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Only if validity is low</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-d" onclick="handleCheck(14, 'q14-d')">
+                    <label for="q14-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Depends on test length</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 15 -->
+        <div class="question">
+            <h3>15. An achievement test lacks evidence of discriminant validity. What is the risk?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-a" onclick="handleCheck(15, 'q15-a')">
+                    <label for="q15-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. It may measure unrelated constructs</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-b" onclick="handleCheck(15, 'q15-b')">
+                    <label for="q15-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. It will overpredict performance</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-c" onclick="handleCheck(15, 'q15-c')">
+                    <label for="q15-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. It ensures cultural fairness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-d" onclick="handleCheck(15, 'q15-d')">
+                    <label for="q15-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. It reduces scoring errors</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 16 -->
+        <div class="question">
+            <h3>16. A test manual reports a KR-20 of 0.60. What action is warranted?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-a" onclick="handleCheck(16, 'q16-a')">
+                    <label for="q16-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Remove poorly discriminating items</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-b" onclick="handleCheck(16, 'q16-b')">
+                    <label for="q16-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Increase administration time</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-c" onclick="handleCheck(16, 'q16-c')">
+                    <label for="q16-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Use it for high-stakes decisions</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-d" onclick="handleCheck(16, 'q16-d')">
+                    <label for="q16-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Ignore, as KR-20 is outdated</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 16 -->
+        <div class="question">
+            <h3>17. A test has a floor effect. How does this affect interpretation?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-a" onclick="handleCheck(17, 'q17-a')">
+                    <label for="q17-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Scores cluster at the lower end, limiting differentiation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-b" onclick="handleCheck(17, 'q17-b')">
+                    <label for="q17-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. It improves reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-c" onclick="handleCheck(17, 'q17-c')">
+                    <label for="q17-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. It indicates high difficulty</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-d" onclick="handleCheck(17, 'q17-d')">
+                    <label for="q17-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. No impact on validity</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 17 -->
+        <div class="question">
+            <h3>18. A neuropsychological battery has inter-scorer reliability of κ = 0.45. Is this acceptable?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-a" onclick="handleCheck(18, 'q18-a')">
+                    <label for="q18-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Yes, κ > 0.40 is adequate</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-b" onclick="handleCheck(18, 'q18-b')">
+                    <label for="q18-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. No, aim for κ ≥ 0.60</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-c" onclick="handleCheck(18, 'q18-c')">
+                    <label for="q18-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Only if validity is high</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-d" onclick="handleCheck(18, 'q18-d')">
+                    <label for="q18-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Depends on test purpose</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 19 -->
+        <div class="question">
+            <h3>19. A test's manual lacks evidence of cross-cultural validity. What should you do?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-a" onclick="handleCheck(19, 'q19-a')">
+                    <label for="q19-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Use alternative tests with cultural fairness data</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-b" onclick="handleCheck(19, 'q19-b')">
+                    <label for="q19-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Proceed, as all tests are culture-free</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-c" onclick="handleCheck(19, 'q19-c')">
+                    <label for="q19-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Adjust scores manually</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-d" onclick="handleCheck(19, 'q19-d')">
+                    <label for="q19-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Ignore cultural factors</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 19 -->
+        <div class="question">
+            <h3>20. A student's true score is 85 ± 5 (SEM). Which score range is plausible?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q20-a" onclick="handleCheck(20, 'q20-a')">
+                    <label for="q20-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. 80–90</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q20-b" onclick="handleCheck(20, 'q20-b')">
+                    <label for="q20-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. 75–95</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q20-c" onclick="handleCheck(20, 'q20-c')">
+                    <label for="q20-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. 85–95</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q20-d" onclick="handleCheck(20, 'q20-d')">
+                    <label for="q20-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. 70–100</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 20 -->
+        <div class="question">
+            <h3>21. Two subtests correlate at r = 0.10. What does this suggest?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q21-a" onclick="handleCheck(21, 'q21-a')">
+                    <label for="q21-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. They measure unrelated constructs</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q21-b" onclick="handleCheck(21, 'q21-b')">
+                    <label for="q21-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. High convergent validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q21-c" onclick="handleCheck(21, 'q21-c')">
+                    <label for="q21-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Redundant items</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q21-d" onclick="handleCheck(21, 'q21-d')">
+                    <label for="q21-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Scoring errors</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 21 -->
+        <div class="question">
+            <h3>22. A test's validity coefficient is 0.40. What percentage of variance is explained?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q22-a" onclick="handleCheck(22, 'q22-a')">
+                    <label for="q22-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. 40%</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q22-b" onclick="handleCheck(22, 'q22-b')">
+                    <label for="q22-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. 16%</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q22-c" onclick="handleCheck(22, 'q22-c')">
+                    <label for="q22-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. 60%</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q22-d" onclick="handleCheck(22, 'q22-d')">
+                    <label for="q22-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. 20%</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 22 -->
+        <div class="question">
+            <h3>23. A norm-referenced test has a restricted range. How does this affect validity?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q23-a" onclick="handleCheck(23, 'q23-a')">
+                    <label for="q23-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Reduces observed validity coefficients</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q23-b" onclick="handleCheck(23, 'q23-b')">
+                    <label for="q23-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Increases reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q23-c" onclick="handleCheck(23, 'q23-c')">
+                    <label for="q23-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Improves fairness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q23-d" onclick="handleCheck(23, 'q23-d')">
+                    <label for="q23-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. No effect</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 23 -->
+        <div class="question">
+            <h3>24. A speed test has high internal consistency (α = 0.90). Is this appropriate?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q24-a" onclick="handleCheck(24, 'q24-a')">
+                    <label for="q24-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. No, speed tests should use test-retest reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q24-b" onclick="handleCheck(24, 'q24-b')">
+                    <label for="q24-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Yes, internal consistency is sufficient</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q24-c" onclick="handleCheck(24, 'q24-c')">
+                    <label for="q24-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Only if validity is high</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q24-d" onclick="handleCheck(24, 'q24-d')">
+                    <label for="q24-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Depends on test length</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 24 -->
+        <div class="question">
+            <h3>25. A test's manual reports "good" validity but "poor" reliability. What should you conclude?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q25-a" onclick="handleCheck(25, 'q25-a')">
+                    <label for="q25-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. The test is flawed; reliability is a prerequisite for validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q25-b" onclick="handleCheck(25, 'q25-b')">
+                    <label for="q25-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Validity compensates for reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q25-c" onclick="handleCheck(25, 'q25-c')">
+                    <label for="q25-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Use it for research only</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q25-d" onclick="handleCheck(25, 'q25-d')">
+                    <label for="q25-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Ignore reliability</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 25 -->
+        <div class="question">
+            <h3>26. A cutoff score yields 15% false positives. What does this mean?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q26-a" onclick="handleCheck(26, 'q26-a')">
+                    <label for="q26-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. 15% of passes are unqualified</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q26-b" onclick="handleCheck(26, 'q26-b')">
+                    <label for="q26-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. 15% of fails are qualified</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q26-c" onclick="handleCheck(26, 'q26-c')">
+                    <label for="q26-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. 85% of passes are qualified</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q26-d" onclick="handleCheck(26, 'q26-d')">
+                    <label for="q26-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Both a and c</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 26 -->
+        <div class="question">
+            <h3>27. A test has a SEM of 2. A score difference of 5 points is observed. Is this significant?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q27-a" onclick="handleCheck(27, 'q27-a')">
+                    <label for="q27-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Yes</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q27-b" onclick="handleCheck(27, 'q27-b')">
+                    <label for="q27-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. No</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q27-c" onclick="handleCheck(27, 'q27-c')">
+                    <label for="q27-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Depends on validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q27-d" onclick="handleCheck(27, 'q27-d')">
+                    <label for="q27-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Only with a large sample</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 27 -->
+        <div class="question">
+            <h3>28. A test's alternate forms correlation is 0.70. What does this imply?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q28-a" onclick="handleCheck(28, 'q28-a')">
+                    <label for="q28-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Moderate equivalence between forms</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q28-b" onclick="handleCheck(28, 'q28-b')">
+                    <label for="q28-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. High internal consistency</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q28-c" onclick="handleCheck(28, 'q28-c')">
+                    <label for="q28-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Poor test-retest reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q28-d" onclick="handleCheck(28, 'q28-d')">
+                    <label for="q28-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Invalid scoring</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 28 -->
+        <div class="question">
+            <h3>29. A clinician observes inconsistent responses during testing. Which psychometric issue is MOST relevant?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q29-a" onclick="handleCheck(29, 'q29-a')">
+                    <label for="q29-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Low reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q29-b" onclick="handleCheck(29, 'q29-b')">
+                    <label for="q29-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Response bias (e.g., random guessing)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q29-c" onclick="handleCheck(29, 'q29-c')">
+                    <label for="q29-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. High validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q29-d" onclick="handleCheck(29, 'q29-d')">
+                    <label for="q29-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Cultural loading</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 29 -->
+        <div class="question">
+            <h3>30. A test's manual reports a skewed distribution. How might this affect norms?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q30-a" onclick="handleCheck(30, 'q30-a')">
+                    <label for="q30-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Percentile ranks may misrepresent true ability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q30-b" onclick="handleCheck(30, 'q30-b')">
+                    <label for="q30-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Reliability increases</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q30-c" onclick="handleCheck(30, 'q30-c')">
+                    <label for="q30-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Validity is unaffected</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q30-d" onclick="handleCheck(30, 'q30-d')">
+                    <label for="q30-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. SEM decreases</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 30 -->
+        <div class="question">
+            <h3>31. A test's items have poor discrimination indices (0.10–0.20). What should be done?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q31-a" onclick="handleCheck(31, 'q31-a')">
+                    <label for="q31-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Revise or remove items</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q31-b" onclick="handleCheck(31, 'q31-b')">
+                    <label for="q31-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Increase test length</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q31-c" onclick="handleCheck(31, 'q31-c')">
+                    <label for="q31-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Use stricter cutoff scores</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q31-d" onclick="handleCheck(31, 'q31-d')">
+                    <label for="q31-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Ignore, as validity compensates</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 31 -->
+        <div class="question">
+            <h3>32. A school uses a test with low predictive validity for admissions. What is the risk?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q32-a" onclick="handleCheck(32, 'q32-a')">
+                    <label for="q32-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Unqualified students may be accepted</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q32-b" onclick="handleCheck(32, 'q32-b')">
+                    <label for="q32-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. High false-negative rates</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q32-c" onclick="handleCheck(32, 'q32-c')">
+                    <label for="q32-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Improved fairness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q32-d" onclick="handleCheck(32, 'q32-d')">
+                    <label for="q32-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Reduced administrative costs</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 32 -->
+        <div class="question">
+            <h3>33. A hiring test has adverse impact on a protected group. What psychometric property is compromised?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q33-a" onclick="handleCheck(33, 'q33-a')">
+                    <label for="q33-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Fairness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q33-b" onclick="handleCheck(33, 'q33-b')">
+                    <label for="q33-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q33-c" onclick="handleCheck(33, 'q33-c')">
+                    <label for="q33-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Content validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q33-d" onclick="handleCheck(33, 'q33-d')">
+                    <label for="q33-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Standardization</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 33 -->
+        <div class="question">
+            <h3>34. A test with high sensitivity (0.95) but low specificity (0.50) is used for diagnosis. What is the consequence?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q34-a" onclick="handleCheck(34, 'q34-a')">
+                    <label for="q34-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. High false-positive rate</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q34-b" onclick="handleCheck(34, 'q34-b')">
+                    <label for="q34-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. High false-negative rate</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q34-c" onclick="handleCheck(34, 'q34-c')">
+                    <label for="q34-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Improved accuracy</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q34-d" onclick="handleCheck(34, 'q34-d')">
+                    <label for="q34-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Reduced SEM</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 34 -->
+        <div class="question">
+            <h3>35. A test developer uses only college students for norming. What threat arises?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q35-a" onclick="handleCheck(35, 'q35-a')">
+                    <label for="q35-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Limited generalizability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q35-b" onclick="handleCheck(35, 'q35-b')">
+                    <label for="q35-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. High reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q35-c" onclick="handleCheck(35, 'q35-c')">
+                    <label for="q35-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Improved validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q35-d" onclick="handleCheck(35, 'q35-d')">
+                    <label for="q35-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Reduced cultural bias</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 35 -->
+        <div class="question">
+            <h3>36. A test lacks cross-validation studies. What is the risk?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q36-a" onclick="handleCheck(36, 'q36-a')">
+                    <label for="q36-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Validity shrinkage in new populations</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q36-b" onclick="handleCheck(36, 'q36-b')">
+                    <label for="q36-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Increased reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q36-c" onclick="handleCheck(36, 'q36-c')">
+                    <label for="q36-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Improved fairness</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q36-d" onclick="handleCheck(36, 'q36-d')">
+                    <label for="q36-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Faster administration</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 36 -->
+        <div class="question">
+            <h3>37. A test uses Likert scales but reports parametric statistics. What assumption is violated?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q37-a" onclick="handleCheck(37, 'q37-a')">
+                    <label for="q37-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Interval-level data</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q37-b" onclick="handleCheck(37, 'q37-b')">
+                    <label for="q37-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Normal distribution</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q37-c" onclick="handleCheck(37, 'q37-c')">
+                    <label for="q37-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Homogeneity of variance</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q37-d" onclick="handleCheck(37, 'q37-d')">
+                    <label for="q37-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Independence of observations</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 37 -->
+        <div class="question">
+            <h3>38. A test manual omits details about scorer training. What principle is neglected?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q38-a" onclick="handleCheck(38, 'q38-a')">
+                    <label for="q38-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Standardization</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q38-b" onclick="handleCheck(38, 'q38-b')">
+                    <label for="q38-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q38-c" onclick="handleCheck(38, 'q38-c')">
+                    <label for="q38-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q38-d" onclick="handleCheck(38, 'q38-d')">
+                    <label for="q38-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Fairness</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add after question 38 -->
+        <div class="question">
+            <h3>39. A test's items were selected based on expert judgment alone. What validity evidence is missing?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q39-a" onclick="handleCheck(39, 'q39-a')">
+                    <label for="q39-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>a. Empirical</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q39-b" onclick="handleCheck(39, 'q39-b')">
+                    <label for="q39-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>b. Face validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q39-c" onclick="handleCheck(39, 'q39-c')">
+                    <label for="q39-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>c. Content validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q39-d" onclick="handleCheck(39, 'q39-d')">
+                    <label for="q39-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>d. Cultural fairness</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue with existing quiz controls and scripts -->
+    </div>
+
+    <!-- Add submit button and score display -->
+    <div class="quiz-controls">
+        <button 
+            onclick="checkAnswers()" 
+            class="submit-btn" 
+            id="submit-btn"
+            aria-label="Submit answers for scoring"
+        >
+            Submit Answers
+        </button>
+        <button 
+            onclick="showReview()" 
+            class="review-btn" 
+            id="review-btn" 
+            style="display: none;"
+            aria-label="Review correct answers and explanations"
+        >
+            Review Answers
+        </button>
+        <button 
+            onclick="resetQuiz()" 
+            class="review-btn" 
+            id="reset-btn" 
+            style="display: none;"
+            aria-label="Reset quiz to start over"
+        >
+            Reset Quiz
+        </button>
+        <div id="score-display" class="score-display"></div>
+    </div>
+
+    <!-- Add JavaScript for quiz functionality -->
+    <script>
+        // Cache DOM elements
+        const quizElements = {
+            submitBtn: document.getElementById('submit-btn'),
+            reviewBtn: document.getElementById('review-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            scoreDisplay: document.getElementById('score-display')
+        };
+
+        const correctAnswers = {
+            'q1': 'b', // Reliability
+            'q2': 'b', // To ensure the test represents the target domain
+            'q3': 'b', // Evidence of cultural fairness
+            'q4': 'd', // Both b and c
+            'q5': 'b', // Standard Error of Measurement (SEM)
+            'q6': 'b', // It demonstrates the test's ability to forecast future performance
+            'q7': 'b', // Suggests strong internal consistency
+            'q8': 'a',  // It does not guarantee the test measures the intended construct
+            'q9': 'a',   // It quantifies the precision of individual scores
+            'q10': 'a',  // It fails to capture key aspects of the target construct
+            'q11': 'b',  // No, reliability should be ≥0.80 for clinical use
+            'q12': 'a',  // No, coefficients <0.30 have limited utility
+            'q13': 'b',
+            'q14': 'a',
+            'q15': 'a',
+            'q16': 'a',
+            'q17': 'a',
+            'q18': 'b',
+            'q19': 'a',
+            'q20': 'b',
+            'q21': 'a',
+            'q22': 'b',
+            'q23': 'a',
+            'q24': 'a',
+            'q25': 'a',
+            'q26': 'a',
+            'q27': 'a',
+            'q28': 'a',
+            'q29': 'b',
+            'q30': 'a',
+            'q31': 'a',
+            'q32': 'a',
+            'q33': 'a',
+            'q34': 'a',
+            'q35': 'a',
+            'q36': 'a',
+            'q37': 'a',
+            'q38': 'a',
+            'q39': 'a'
+        };
+
+        const explanations = {
+            'q1': 'Reliability ensures consistent measurement across test administrations.',
+            'q2': 'Content validity ensures the test items adequately represent the domain being measured.',
+            'q3': 'Cultural fairness is crucial to prevent bias and ensure equitable assessment.',
+            'q4': 'Both high consistency in scores and low measurement error are indicated by this reliability coefficient.',
+            'q5': 'The Standard Error of Measurement (SEM) quantifies the precision of test scores.',
+            'q6': 'Predictive validity is essential for tests designed to forecast future performance.',
+            'q7': 'A high Cronbach\'s alpha indicates strong internal consistency among test items.',
+            'q8': 'Face validity is subjective and doesn\'t guarantee actual measurement of the intended construct.',
+            'q9': 'SEM provides estimate of measurement error in individual test scores.',
+            'q10': 'Construct underrepresentation occurs when a test fails to measure important aspects of the construct.',
+            'q11': 'Clinical applications typically require reliability coefficients ≥0.80.',
+            'q12': 'Validity coefficients <0.30 generally explain less than 10% of variance.',
+            'q13': '95% CI = Score ± 1.96*SEM (1.96*3≈6 → 100±6 = 94–106)',
+            'q14': 'Reliability ≥0.80 is preferred for most standardized tests.',
+            'q15': 'Poor discriminant validity suggests measuring unrelated constructs.',
+            'q16': 'KR-20 <0.70 suggests need for item analysis and improvement.',
+            'q17': 'Floor effects limit ability to distinguish between low performers.',
+            'q18': 'Kappa values ≥0.60 are generally considered acceptable for clinical use.',
+            'q19': 'Cultural validity evidence is essential for equitable assessment across diverse populations.',
+            'q20': '95% confidence interval = True score ± 1.96*SEM (85 ± 1.96*5 ≈ 75–95)',
+            'q21': 'Low correlation (r=0.10) suggests the subtests measure distinct constructs with little relationship.',
+            'q22': 'Variance explained = r² × 100 → (0.40)² × 100 = 16%',
+            'q23': 'Restricted range attenuates (reduces) observed correlations, including validity coefficients.',
+            'q24': 'Speed tests require test-retest reliability as internal consistency may be artificially inflated due to time constraints.',
+            'q25': 'Reliability is a necessary precondition for validity - a test cannot be valid if it\'s not reliable.',
+            'q26': 'False positives occur when unqualified candidates pass the selection.',
+            'q27': 'A difference of 2.5 SEM (5/2=2.5) is considered significant at p<0.05 level.',
+            'q28': 'Alternate forms correlations between 0.60-0.80 are considered moderate equivalence.',
+            'q29': 'Inconsistent responses during administration typically indicate response bias rather than inherent reliability issues.',
+            'q30': 'Skewed distributions distort percentile interpretations as they don\'t follow normal distribution assumptions.',
+            'q31': 'Discrimination indices below 0.20 indicate items that poorly differentiate between high and low performers.',
+            'q32': 'Low predictive validity increases false positives (unqualified candidates passing selection).',
+            'q33': 'Adverse impact indicates fairness issues in test outcomes across different groups.',
+            'q34': 'High sensitivity minimizes false negatives, while low specificity increases false positives.',
+            'q35': 'Narrow norming samples limit the test\'s applicability to broader populations.',
+            'q36': 'Without cross-validation, validity coefficients may decrease when applied to new populations due to overfitting to the original sample.',
+            'q37': 'Parametric statistics assume interval-level data, but Likert scales are ordinal measurements.',
+            'q38': 'Standardization requires clear administration and scoring procedures to ensure consistent implementation.',
+            'q39': 'Empirical validity evidence requires statistical verification beyond expert judgment.'
+        };
+
+        function checkAnswers() {
+            if(quizElements.submitBtn.disabled) return;
+            
             let score = 0;
+            document.querySelectorAll('.feedback, .correct-answer, .explanation').forEach(el => el.remove());
 
-            for (let i = 0; i < questions.length; i++) {
-                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
-                const userAnswer = selectedOption ? selectedOption.value : null;
+            for (let i = 1; i <= 39; i++) {
+                const checkedAnswer = document.querySelector(`input[id^="q${i}-"]:checked`);
+                const questionDiv = document.querySelector(`#q${i}-a`).closest('.question');
+                
+                if (checkedAnswer) {
+                    const selectedOption = checkedAnswer.id.split('-')[1];
+                    const isCorrect = selectedOption === correctAnswers[`q${i}`];
+                    
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'} show`;
+                    feedbackDiv.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+                    questionDiv.appendChild(feedbackDiv);
 
-                // Check if the answer is correct
-                const feedbackDiv = document.getElementById(`feedback-${i}`);
-                if (userAnswer === questions[i].answer) {
-                    score++;
-                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                    if (isCorrect) score++;
                 } else {
-                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = 'feedback incorrect show';
+                    feedbackDiv.textContent = 'Please answer this question';
+                    questionDiv.appendChild(feedbackDiv);
                 }
             }
 
-            // Display total score
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
-        });
+            quizElements.scoreDisplay.textContent = `Score: ${score} out of 39 (${Math.round(score/39*100)}%)`;
+            quizElements.reviewBtn.style.display = 'inline-block';
+            quizElements.resetBtn.style.display = 'inline-block';
+            quizElements.submitBtn.disabled = true;
+        }
+
+        function showReview() {
+            document.querySelectorAll('.correct-answer, .explanation').forEach(el => el.remove());
+
+            for (let i = 1; i <= 39; i++) {
+                const questionDiv = document.querySelector(`#q${i}-a`).closest('.question');
+                const correctOption = correctAnswers[`q${i}`];
+                
+                const correctDiv = document.createElement('div');
+                correctDiv.className = 'correct-answer';
+                correctDiv.textContent = `Correct answer: Option ${correctOption.toUpperCase()}`;
+                questionDiv.appendChild(correctDiv);
+
+                const explainDiv = document.createElement('div');
+                explainDiv.className = 'explanation';
+                explainDiv.textContent = explanations[`q${i}`];
+                questionDiv.appendChild(explainDiv);
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('.check').forEach(checkbox => checkbox.checked = false);
+            quizElements.submitBtn.disabled = false;
+            quizElements.reviewBtn.style.display = 'none';
+            quizElements.resetBtn.style.display = 'none';
+            quizElements.scoreDisplay.textContent = '';
+            document.querySelectorAll('.feedback, .correct-answer, .explanation').forEach(el => el.remove());
+        }
     </script>
 </body>
 </html>
