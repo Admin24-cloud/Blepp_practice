@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice - Dev Psych</title>
+    <link rel="icon" href="human-brain.png" type="image/png">
+    <style>
+        /* From Uiverse.io by PriyanshuGupta28 */ 
+        .checkbox-wrapper input[type="checkbox"] {
+            visibility: hidden;
+            display: none;
+        }
+
+        .checkbox-wrapper *,
+        .checkbox-wrapper ::after,
+        .checkbox-wrapper ::before {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .checkbox-wrapper .label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-wrapper .check {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            opacity: 0;
+        }
+
+        .checkbox-wrapper .label svg {
+            vertical-align: middle;
+        }
+
+        .checkbox-wrapper .path1 {
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            transition: .5s stroke-dashoffset;
+            opacity: 0;
+        }
+
+        .checkbox-wrapper .check:checked + label svg g path {
+            stroke-dashoffset: 0;
+            opacity: 1;
+        }
+
+        /* Additional styles for quiz layout */
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .question {
+            margin-bottom: 30px;
+        }
+
+        .question h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .options {
+            margin-left: 20px;
+        }
+
+        .quiz-controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .submit-btn, .review-btn {
+            transition: all 0.2s ease;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .submit-btn:hover, .review-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background-color: #45a049;
+        }
+
+        .submit-btn:active, .review-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .review-btn {
+            background-color: #2196F3;
+            margin-left: 10px;
+        }
+
+        .review-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .score-display {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        
+        .feedback.show {
+            max-height: 50px;
+            opacity: 1;
+            margin-top: 10px;
+        }
+
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+
+        .correct-answer {
+            background-color: #dff0d8;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #d6e9c6;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+    <script>
+        function handleCheck(questionNumber, checkboxId) {
+            // Get all checkboxes for this question
+            const checkboxes = document.querySelectorAll(`[id^="q${questionNumber}-"]`);
+            
+            // Uncheck all other checkboxes in the same question
+            checkboxes.forEach(checkbox => {
+                if (checkbox.id !== checkboxId) {
+                    checkbox.checked = false;
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="question">
+            <h3>1. Which statement best describes the concept of "reaction range" in behavioral genetics?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-a" onclick="handleCheck(1, 'q1-a')">
+                    <label for="q1-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Heredity strictly determines the upper limit of a trait</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-b" onclick="handleCheck(1, 'q1-b')">
+                    <label for="q1-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Environment has no impact on traits with high heritability.</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-c" onclick="handleCheck(1, 'q1-c')">
+                    <label for="q1-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Genes establish a potential range, and environment determines where the trait falls within it.</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-d" onclick="handleCheck(1, 'q1-d')">
+                    <label for="q1-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Reaction range only applies to physical characteristics like height.</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>2. Intelligence is strongly influenced by heredity but is also affected by factors such as parental stimulation and education. This illustrates:</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-a" onclick="handleCheck(2, 'q2-a')">
+                    <label for="q2-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Canalization</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-b" onclick="handleCheck(2, 'q2-b')">
+                    <label for="q2-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Gene-environment correlation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-c" onclick="handleCheck(2, 'q2-c')">
+                    <label for="q2-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Epigenetics</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-d" onclick="handleCheck(2, 'q2-d')">
+                    <label for="q2-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Nonshared environmental influences</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>3. Identical twins raised in separate households both develop a strong aptitude for music despite no musical training in either environment. This scenario BEST demonstrates:</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-a" onclick="handleCheck(3, 'q3-a')">
+                    <label for="q3-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Passive gene-environment correlation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-b" onclick="handleCheck(3, 'q3-b')">
+                    <label for="q3-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Evocative gene-environment correlation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-c" onclick="handleCheck(3, 'q3-c')">
+                    <label for="q3-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. The role of nonshared environmental influences</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-d" onclick="handleCheck(3, 'q3-d')">
+                    <label for="q3-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. The dominance of genetic factors over environmental ones</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>4. A child with a genetic predisposition for extroversion joins multiple school clubs and social groups. This exemplifies:</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-a" onclick="handleCheck(4, 'q4-a')">
+                    <label for="q4-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Passive gene-environment correlation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-b" onclick="handleCheck(4, 'q4-b')">
+                    <label for="q4-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Active gene-environment correlation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-c" onclick="handleCheck(4, 'q4-c')">
+                    <label for="q4-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Canalization</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-d" onclick="handleCheck(4, 'q4-d')">
+                    <label for="q4-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                    stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Epigenetics</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>5. Which of the following is a characteristic of heredity (nature) rather than environment (nurture)?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-a" onclick="handleCheck(5, 'q5-a')">
+                    <label for="q5-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Socioeconomic status</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-b" onclick="handleCheck(5, 'q5-b')">
+                    <label for="q5-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Ethnic gloss</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-c" onclick="handleCheck(5, 'q5-c')">
+                    <label for="q5-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Concordance rate in twin studies</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-d" onclick="handleCheck(5, 'q5-d')">
+                    <label for="q5-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Parental educational style</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    <div class="quiz-controls">
+        <button onclick="checkAnswers()" class="submit-btn" id="submit-btn"
+            aria-label="Submit answers for scoring">
+            Submit Answers
+        </button>
+        <button onclick="showReview()" class="review-btn" id="review-btn" 
+            style="display: none;"
+            aria-label="Review correct answers and explanations">
+            Review Answers
+        </button>
+        <button onclick="resetQuiz()" class="review-btn" id="reset-btn" 
+            style="display: none;"
+            aria-label="Reset quiz to start over">
+            Reset Quiz
+        </button>
+        <div id="score-display" class="score-display"></div>
+    </div>
+
+    <script>
+        const quizElements = {
+            submitBtn: document.getElementById('submit-btn'),
+            reviewBtn: document.getElementById('review-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            scoreDisplay: document.getElementById('score-display')
+        };
+
+        const correctAnswers = {
+            'q1': 'c', 'q2': 'b', 'q3': 'd', 'q4': 'b', 'q5': 'c'
+        };
+
+        const explanations = {
+            'q1': 'The reaction range refers to the genetic boundaries within which environmental factors can influence trait expression. A child\'s genetic height potential sets a range, but nutrition determines actual height.',
+            'q2': 'Gene-environment correlation shows how genetic traits influence environment choices. A curious child (genetics) seeks stimulating environments (nurture).',
+            'q3': 'The dominance of genetic factors over environmental ones indicates that identical twins raised in separate environments develop similar traits, emphasizing the role of heredity.',
+            'q4': 'Active gene-environment correlation occurs when individuals seek environments that align with their genetic tendencies. The child\'s innate extroversion (heredity) drives them to choose socially engaging activities (environment).',
+            'q5': 'Concordance rate in twin studies is a characteristic of heredity rather than environment.'
+        };
+
+        function checkAnswers() {
+            if(quizElements.submitBtn.disabled) return;
+            
+            let score = 0;
+            document.querySelectorAll('.feedback, .correct-answer, .explanation').forEach(el => el.remove());
+
+            for (let i = 1; i <= 5; i++) {
+                const checkedAnswer = document.querySelector(`input[id^="q${i}-"]:checked`);
+                const questionDiv = document.querySelector(`#q${i}-a`).closest('.question');
+                
+                if (checkedAnswer) {
+                    const selectedOption = checkedAnswer.id.split('-')[1];
+                    const isCorrect = selectedOption === correctAnswers[`q${i}`];
+                    
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'} show`;
+                    feedbackDiv.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+                    questionDiv.appendChild(feedbackDiv);
+
+                    if (isCorrect) score++;
+                } else {
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = 'feedback incorrect show';
+                    feedbackDiv.textContent = 'Please answer this question';
+                    questionDiv.appendChild(feedbackDiv);
+                }
+            }
+
+            quizElements.scoreDisplay.textContent = `Score: ${score} out of 5 (${Math.round(score/5*100)}%)`;
+            quizElements.reviewBtn.style.display = 'inline-block';
+            quizElements.resetBtn.style.display = 'inline-block';
+            quizElements.submitBtn.disabled = true;
+        }
+
+        function showReview() {
+            document.querySelectorAll('.correct-answer, .explanation').forEach(el => el.remove());
+
+            for (let i = 1; i <= 5; i++) {
+                const questionDiv = document.querySelector(`#q${i}-a`).closest('.question');
+                const correctOption = correctAnswers[`q${i}`];
+                
+                const correctDiv = document.createElement('div');
+                correctDiv.className = 'correct-answer';
+                correctDiv.textContent = `Correct answer: Option ${correctOption.toUpperCase()}`;
+                questionDiv.appendChild(correctDiv);
+
+                const explainDiv = document.createElement('div');
+                explainDiv.className = 'explanation';
+                explainDiv.textContent = explanations[`q${i}`];
+                questionDiv.appendChild(explainDiv);
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('.check').forEach(el => el.checked = false);
+            document.querySelectorAll('.feedback, .correct-answer, .explanation').forEach(el => el.remove());
+            quizElements.scoreDisplay.textContent = '';
+            quizElements.reviewBtn.style.display = 'none';
+            quizElements.resetBtn.style.display = 'none';
+            quizElements.submitBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
