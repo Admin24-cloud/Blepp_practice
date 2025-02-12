@@ -3,158 +3,1413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D</title>
-    <link rel="icon" href="human-brain.png" type="image/x-icon">
+    <title>Practice - Psych Ass</title>
+    <link rel="icon" href="human-brain.png" type="image/png">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
+         
+        .checkbox-wrapper input[type="checkbox"] {
+            visibility: hidden;
+            display: none;
+        }
+
+        .checkbox-wrapper *,
+        .checkbox-wrapper ::after,
+        .checkbox-wrapper ::before {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .checkbox-wrapper .label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-wrapper .check {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            opacity: 0;
+        }
+
+        .checkbox-wrapper .label svg {
+            vertical-align: middle;
+        }
+
+        .checkbox-wrapper .path1 {
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            transition: .5s stroke-dashoffset;
+            opacity: 0;
+        }
+
+        .checkbox-wrapper .check:checked + label svg g path {
+            stroke-dashoffset: 0;
+            opacity: 1;
+        }
+
+        /* Additional styles for quiz layout */
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
             padding: 20px;
+            font-family: Arial, sans-serif;
         }
-        h1 {
-            text-align: center;
-            color: #4a90e2;
-        }
-        #questions {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
+
         .question {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 10px;
+            margin-bottom: 30px;
         }
+
+        .question h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
         .options {
             margin-left: 20px;
         }
-        input[type="radio"] {
-            margin-right: 10px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #357ab8;
-        }
-        #results {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .correct {
-            color: green;
-            font-weight: bold;
-        }
-        .incorrect {
-            color: red;
-            font-weight: bold;
-        }
-        .score {
-            font-size: 20px;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        .feedback {
-            margin-top: 5px;
-            font-weight: bold;
-        }
-        footer {
+
+        .quiz-controls {
             text-align: center;
+            margin-top: 30px;
+        }
+
+        .submit-btn, .review-btn {
+            transition: all 0.2s ease;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .submit-btn:hover, .review-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background-color: #45a049;
+        }
+
+        .submit-btn:active, .review-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .review-btn {
+            background-color: #2196F3;
+            margin-left: 10px;
+        }
+
+        .review-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .score-display {
             margin-top: 20px;
-            font-size: 14px;
-            color: #777;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        
+        .feedback.show {
+            max-height: 50px;
+            opacity: 1;
+            margin-top: 10px;
+        }
+
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+
+        .correct-answer {
+            background-color: #dff0d8;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #d6e9c6;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #ddd;
         }
     </style>
+    <script>
+        function handleCheck(questionNumber, checkboxId) {
+            // Get all checkboxes for this question
+            const checkboxes = document.querySelectorAll(`[id^="q${questionNumber}-"]`);
+            
+            // Uncheck all other checkboxes in the same question
+            checkboxes.forEach(checkbox => {
+                if (checkbox.id !== checkboxId) {
+                    checkbox.checked = false;
+                }
+            });
+        }
+    </script>
 </head>
 <body>
-    <h1>Selection of Assessment Methods and Tools</h1>
-    <div id="questions"></div>
-    <button id="submit">Submit Answers</button>
-    <div id="results" style="margin-top: 20px;"></div>
+    <div class="quiz-container">
+        <div class="question">
+            <h3>1. Which assessment method is BEST for gathering detailed biographical information about a client?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-a" onclick="handleCheck(1, 'q1-a')">
+                    <label for="q1-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Structured personality test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-b" onclick="handleCheck(1, 'q1-b')">
+                    <label for="q1-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Clinical interview</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-c" onclick="handleCheck(1, 'q1-c')">
+                    <label for="q1-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Speed test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q1-d" onclick="handleCheck(1, 'q1-d')">
+                    <label for="q1-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Portfolio review</span>
+                    </label>
+                </div>
+            </div>
+        </div>
 
-    <footer>
-        <p>Created by Dan_delion</p>
-    </footer>
+        <div class="question">
+            <h3>2. Which tool is designed to assess personality pathology in adults?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-a" onclick="handleCheck(2, 'q2-a')">
+                    <label for="q2-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Stanford-Binet Intelligence Scale</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-b" onclick="handleCheck(2, 'q2-b')">
+                    <label for="q2-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Minnesota Multiphasic Personality Inventory (MMPI-2)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-c" onclick="handleCheck(2, 'q2-c')">
+                    <label for="q2-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Woodcock-Johnson Tests of Achievement</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q2-d" onclick="handleCheck(2, 'q2-d')">
+                    <label for="q2-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Strong Interest Inventory</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>3. Why is naturalistic observation preferred over self-report in assessing child behavior?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-a" onclick="handleCheck(3, 'q3-a')">
+                    <label for="q3-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. It captures real-time behavior without self-bias</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-b" onclick="handleCheck(3, 'q3-b')">
+                    <label for="q3-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. It is faster to administer</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-c" onclick="handleCheck(3, 'q3-c')">
+                    <label for="q3-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. It is more reliable</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q3-d" onclick="handleCheck(3, 'q3-d')">
+                    <label for="q3-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. It is more valid</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>4. Why is the Vineland Adaptive Behavior Scale used for individuals with intellectual disabilities?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-a" onclick="handleCheck(4, 'q4-a')">
+                    <label for="q4-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. It measures daily living skills critical for independence</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-b" onclick="handleCheck(4, 'q4-b')">
+                    <label for="q4-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. It diagnoses personality disorders</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-c" onclick="handleCheck(4, 'q4-c')">
+                    <label for="q4-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. It assesses abstract reasoning</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q4-d" onclick="handleCheck(4, 'q4-d')">
+                    <label for="q4-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. It predicts academic success</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>5. Why is the Rorschach Inkblot Test controversial for cross-cultural assessments?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-a" onclick="handleCheck(5, 'q5-a')">
+                    <label for="q5-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Cultural differences may affect interpretation of ambiguous stimuli</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-b" onclick="handleCheck(5, 'q5-b')">
+                    <label for="q5-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. It lacks validity scales</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-c" onclick="handleCheck(5, 'q5-c')">
+                    <label for="q5-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. It is time-consuming</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q5-d" onclick="handleCheck(5, 'q5-d')">
+                    <label for="q5-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. It focuses on vocational aptitudes</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>6. Which tool is MOST appropriate for assessing cognitive decline in elderly patients?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-a" onclick="handleCheck(6, 'q6-a')">
+                    <label for="q6-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. 7-Minute Screen</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-b" onclick="handleCheck(6, 'q6-b')">
+                    <label for="q6-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Children's Apperception Test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-c" onclick="handleCheck(6, 'q6-c')">
+                    <label for="q6-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Armed Services Vocational Aptitude Battery (ASVAB)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q6-d" onclick="handleCheck(6, 'q6-d')">
+                    <label for="q6-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Myers-Briggs Type Indicator (MBTI)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>7. What assessment is BEST for a non-English-speaking immigrant?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-a" onclick="handleCheck(7, 'q7-a')">
+                    <label for="q7-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. MMPI-2 without adaptation</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-b" onclick="handleCheck(7, 'q7-b')">
+                    <label for="q7-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Culturally adapted nonverbal tests (e.g., Raven's Matrices)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-c" onclick="handleCheck(7, 'q7-c')">
+                    <label for="q7-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Structured clinical interview in English</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q7-d" onclick="handleCheck(7, 'q7-d')">
+                    <label for="q7-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Projective storytelling tasks</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>8. Which tool is ideal for evaluating vocational interests in adolescents?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-a" onclick="handleCheck(8, 'q8-a')">
+                    <label for="q8-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Beck Anxiety Inventory</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-b" onclick="handleCheck(8, 'q8-b')">
+                    <label for="q8-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Self-Directed Search (SDS)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-c" onclick="handleCheck(8, 'q8-c')">
+                    <label for="q8-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Thematic Apperception Test (TAT)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q8-d" onclick="handleCheck(8, 'q8-d')">
+                    <label for="q8-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Bender-Gestalt Visual Motor Test</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>9. In a school setting, which method is BEST for screening learning disabilities?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-a" onclick="handleCheck(9, 'q9-a')">
+                    <label for="q9-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Curriculum-Based Measurement (CBM)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-b" onclick="handleCheck(9, 'q9-b')">
+                    <label for="q9-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. MMPI-2</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-c" onclick="handleCheck(9, 'q9-c')">
+                    <label for="q9-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Rorschach Inkblot Test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q9-d" onclick="handleCheck(9, 'q9-d')">
+                    <label for="q9-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Halstead-Reitan Battery</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>10. Which tool is MOST suitable for a forensic evaluation in a prison?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-a" onclick="handleCheck(10, 'q10-a')">
+                    <label for="q10-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Strong Interest Inventory</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-b" onclick="handleCheck(10, 'q10-b')">
+                    <label for="q10-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Psychopathy Checklist-Revised (PCL-R)</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-c" onclick="handleCheck(10, 'q10-c')">
+                    <label for="q10-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Vineland Adaptive Behavior Scale</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q10-d" onclick="handleCheck(10, 'q10-d')">
+                    <label for="q10-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Stanford-Binet Intelligence Scale</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>11. Which method is critical for assessing crisis intervention needs after a natural disaster?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-a" onclick="handleCheck(11, 'q11-a')">
+                    <label for="q11-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Brief trauma symptom inventory</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-b" onclick="handleCheck(11, 'q11-b')">
+                    <label for="q11-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Longitudinal case study</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-c" onclick="handleCheck(11, 'q11-c')">
+                    <label for="q11-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. 16 Personality Factor Questionnaire</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q11-d" onclick="handleCheck(11, 'q11-d')">
+                    <label for="q11-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Cognitive ability test</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>12. What tool is essential for tracking progress in a year-long therapy program?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-a" onclick="handleCheck(12, 'q12-a')">
+                    <label for="q12-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Behavioral checklist with repeated measures</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-b" onclick="handleCheck(12, 'q12-b')">
+                    <label for="q12-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Single-administration IQ test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-c" onclick="handleCheck(12, 'q12-c')">
+                    <label for="q12-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Projective drawing task</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q12-d" onclick="handleCheck(12, 'q12-d')">
+                    <label for="q12-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Speed test</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>13. A client with suspected autism spectrum disorder needs an evaluation. Which combination is BEST?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-a" onclick="handleCheck(13, 'q13-a')">
+                    <label for="q13-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. ADOS-2 + parent interview</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-b" onclick="handleCheck(13, 'q13-b')">
+                    <label for="q13-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. MMPI-2 + Rorschach</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-c" onclick="handleCheck(13, 'q13-c')">
+                    <label for="q13-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Stanford-Binet + Strong Interest Inventory</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q13-d" onclick="handleCheck(13, 'q13-d')">
+                    <label for="q13-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Self-Directed Search + Portfolio review</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>14. Which tool is MOST appropriate for assessing executive functioning in a stroke survivor?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-a" onclick="handleCheck(14, 'q14-a')">
+                    <label for="q14-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Wisconsin Card Sorting Test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-b" onclick="handleCheck(14, 'q14-b')">
+                    <label for="q14-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Myers-Briggs Type Indicator</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-c" onclick="handleCheck(14, 'q14-c')">
+                    <label for="q14-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Children's Apperception Test</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q14-d" onclick="handleCheck(14, 'q14-d')">
+                    <label for="q14-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. California Psychological Inventory</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>15. Which method is efficient for screening depression in a college student population?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-a" onclick="handleCheck(15, 'q15-a')">
+                    <label for="q15-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Online self-report survey</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-b" onclick="handleCheck(15, 'q15-b')">
+                    <label for="q15-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. Individual clinical interviews</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-c" onclick="handleCheck(15, 'q15-c')">
+                    <label for="q15-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Projective storytelling</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q15-d" onclick="handleCheck(15, 'q15-d')">
+                    <label for="q15-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Neuropsychological battery</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>16. A clinician uses the MBTI for career counseling. What is the PRIMARY limitation?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-a" onclick="handleCheck(16, 'q16-a')">
+                    <label for="q16-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Low empirical validity for predicting job success</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-b" onclick="handleCheck(16, 'q16-b')">
+                    <label for="q16-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. High cultural bias</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-c" onclick="handleCheck(16, 'q16-c')">
+                    <label for="q16-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Time-consuming administration</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q16-d" onclick="handleCheck(16, 'q16-d')">
+                    <label for="q16-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Complex scoring rules</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>17. A school administers a norm-referenced test to evaluate teaching effectiveness. What is the flaw?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-a" onclick="handleCheck(17, 'q17-a')">
+                    <label for="q17-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Norm-referenced tests compare students, not instructional quality</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-b" onclick="handleCheck(17, 'q17-b')">
+                    <label for="q17-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. The test lacks reliability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-c" onclick="handleCheck(17, 'q17-c')">
+                    <label for="q17-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. It is too short</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q17-d" onclick="handleCheck(17, 'q17-d')">
+                    <label for="q17-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. It uses projective techniques</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>18. A researcher uses convenience sampling for a test standardization study. What threat arises?</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-a" onclick="handleCheck(18, 'q18-a')">
+                    <label for="q18-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Results lack generalizability</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-b" onclick="handleCheck(18, 'q18-b')">
+                    <label for="q18-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. High internal consistency</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-c" onclick="handleCheck(18, 'q18-c')">
+                    <label for="q18-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Improved validity</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q18-d" onclick="handleCheck(18, 'q18-d')">
+                    <label for="q18-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Reduced administration cost</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="question">
+            <h3>19. A community clinic needs to assess trauma in refugees. Recommend a comprehensive plan:</h3>
+            <div class="options">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-a" onclick="handleCheck(19, 'q19-a')">
+                    <label for="q19-a" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>A. Culturally adapted trauma inventory + interpreter-assisted clinical interview</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-b" onclick="handleCheck(19, 'q19-b')">
+                    <label for="q19-b" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>B. MMPI-2 + Rorschach</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-c" onclick="handleCheck(19, 'q19-c')">
+                    <label for="q19-c" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>C. Stanford-Binet + portfolio review</span>
+                    </label>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check" id="q19-d" onclick="handleCheck(19, 'q19-d')">
+                    <label for="q19-d" class="label">
+                        <svg width="45" height="45" viewBox="0 0 95 95">
+                            <rect x="30" y="20" width="50" height="50" stroke="black" fill="none"></rect>
+                            <g transform="translate(0,-952.36222)">
+                                <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" 
+                                      stroke="black" stroke-width="3" fill="none" class="path1"></path>
+                            </g>
+                        </svg>
+                        <span>D. Self-Report Questionnaire (SRQ) alone</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-controls">
+        <button onclick="checkAnswers()" class="submit-btn" id="submit-btn"
+            aria-label="Submit answers for scoring">
+            Submit Answers
+        </button>
+        <button onclick="showReview()" class="review-btn" id="review-btn" 
+            style="display: none;"
+            aria-label="Review correct answers and explanations">
+            Review Answers
+        </button>
+        <button onclick="resetQuiz()" class="review-btn" id="reset-btn" 
+            style="display: none;"
+            aria-label="Reset quiz to start over">
+            Reset Quiz
+        </button>
+        <div id="score-display" class="score-display"></div>
+    </div>
 
     <script>
-        // Questions and answers
-        const questions = [
-            { text: "Which assessment method is BEST for gathering detailed biographical information about a client?", options: ["a. Structured personality test", "b. Clinical interview", "c. Speed test", "d. Portfolio review"], answer: "B" },
-            { text: "Which tool is designed to assess personality pathology in adults?", options: ["a. Stanford-Binet Intelligence Scale", "b. Minnesota Multiphasic Personality Inventory (MMPI-2)", "c. Woodcock-Johnson Tests of Achievement", "d. Strong Interest Inventory"], answer: "B" },
-            { text: "Why is naturalistic observation preferred over self-report in assessing child behavior?", options: ["a. It captures real-time behavior without self-bias", "b. It is faster to administer", "c. It requires less training", "d. It guarantees cultural fairness"], answer: "A" },
-            { text: "Why is the Vineland Adaptive Behavior Scale used for individuals with intellectual disabilities?", options: ["a. It measures daily living skills critical for independence", "b. It diagnoses personality disorders", "c. It assesses abstract reasoning", "d. It predicts academic success"], answer: "A" },
-            { text: "Why is the Rorschach Inkblot Test controversial for cross-cultural assessments?", options: ["a. Cultural differences may affect interpretation of ambiguous stimuli", "b. It lacks validity scales", "c. It is time-consuming", "d. It focuses on vocational aptitudes"], answer: "A" },
-            { text: "Which tool is MOST appropriate for assessing cognitive decline in elderly patients?", options: ["a. 7-Minute Screen", "b. Children's Apperception Test", "c. Armed Services Vocational Aptitude Battery (ASVAB)", "d. Myers-Briggs Type Indicator (MBTI)"], answer: "A" },
-            { text: "What assessment is BEST for a non-English-speaking immigrant?", options: ["a. MMPI-2 without adaptation", "b. Culturally adapted nonverbal tests (e.g., Raven's Matrices)", "c. Structured clinical interview in English", "d. Projective storytelling tasks"], answer: "B" },
-            { text: "Which tool is ideal for evaluating vocational interests in adolescents?", options: ["a. Beck Anxiety Inventory", "b. Self-Directed Search (SDS)", "c. Thematic Apperception Test (TAT)", "d. Bender-Gestalt Visual Motor Test"], answer: "B" },
-            { text: "In a school setting, which method is BEST for screening learning disabilities?", options: ["a. Curriculum-Based Measurement (CBM)", "b. MMPI-2", "c. Rorschach Inkblot Test", "d. Halstead-Reitan Battery"], answer: "A" },
-            { text: "Which tool is MOST suitable for a forensic evaluation in a prison?", options: ["a. Strong Interest Inventory", "b. Psychopathy Checklist-Revised (PCL-R)", "c. Vineland Adaptive Behavior Scale", "d. Stanford-Binet Intelligence Scale"], answer: "B" },
-            { text: "Which method is critical for assessing crisis intervention needs after a natural disaster?", options: ["a. Brief trauma symptom inventory", "b. Longitudinal case study", "c. 16 Personality Factor Questionnaire", "d. Cognitive ability test"], answer: "A" },
-            { text: "What tool is essential for tracking progress in a year-long therapy program?", options: ["a. Behavioral checklist with repeated measures", "b. Single-administration IQ test", "c. Projective drawing task", "d. Speed test"], answer: "A" },
-            { text: "A client with suspected autism spectrum disorder needs an evaluation. Which combination is BEST?", options: ["a. ADOS-2 (Autism Diagnostic Observation Schedule) + parent interview", "b. MMPI-2 + Rorschach", "c. Stanford-Binet + Strong Interest Inventory", "d. Self-Directed Search + Portfolio review"], answer: "A" },
-            { text: "Which tool is MOST appropriate for assessing executive functioning in a stroke survivor?", options: ["a. Wisconsin Card Sorting Test", "b. Myers-Briggs Type Indicator", "c. Children's Apperception Test", "d. California Psychological Inventory"], answer: "A" },
-            { text: "Which method is efficient for screening depression in a college student population?", options: ["a. Online self-report survey (e.g., PHQ-9)", "b. Individual clinical interviews", "c. Projective storytelling", "d. Neuropsychological battery"], answer: "A" },
-            { text: "A clinician uses the MBTI for career counseling. What is the PRIMARY limitation?", options: ["a. Low empirical validity for predicting job success", "b. High cultural bias", "c. Time-consuming administration", "d. Complex scoring rules"], answer: "A" },
-            { text: "A school administers a norm-referenced test to evaluate teaching effectiveness. What is the flaw?", options: ["a. Norm-referenced tests compare students, not instructional quality", "b. The test lacks reliability", "c. It is too short", "d. It uses projective techniques"], answer: "A" },
-            { text: "A researcher uses convenience sampling for a test standardization study. What threat arises?", options: ["a. Results lack generalizability", "b. High internal consistency", "c. Improved validity", "d. Reduced administration cost"], answer: "A" },
-            { text: "A community clinic needs to assess trauma in refugees. Recommend a comprehensive plan:", options: ["a. Culturally adapted trauma inventory + interpreter-assisted clinical interview", "b. MMPI-2 + Rorschach", "c. Stanford-Binet + portfolio review", "d. Self-Report Questionnaire (SRQ) alone"], answer: "A" },
-        ];
+        const quizElements = {
+            submitBtn: document.getElementById('submit-btn'),
+            reviewBtn: document.getElementById('review-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            scoreDisplay: document.getElementById('score-display')
+        };
 
-        // Display questions on the page
-        const questionsDiv = document.getElementById('questions');
-        questions.forEach((question, index) => {
-            questionsDiv.innerHTML += `
-                <div class="question">
-                    <p>${index + 1}. ${question.text}</p>
-                    <div class="options">
-                        ${question.options.map(option => `<div><input type="radio" name="question-${index}" value="${option.charAt(0)}"> ${option}</div>`).join('')}
-                    </div>
-                    <div class="feedback" id="feedback-${index}"></div>
-                </div>
-            `;
-        });
+        const correctAnswers = {
+            'q1': 'b', 
+            'q2': 'b', 
+            'q3': 'a',
+            'q4': 'a', 
+            'q5': 'a',
+            'q6': 'a',
+            'q7': 'b',
+            'q8': 'b',
+            'q9': 'a',
+            'q10': 'b',
+            'q11': 'a',
+            'q12': 'a',
+            'q13': 'a',
+            'q14': 'a',
+            'q15': 'a',
+            'q16': 'a',
+            'q17': 'a',
+            'q18': 'a',
+            'q19': 'a'
+        };
 
-        document.getElementById('submit').addEventListener('click', () => {
+        const explanations = {
+            'q1': 'Clinical interviews allow clinicians to gather detailed biographical information through direct questioning and conversation',
+            'q2': 'The MMPI-2 is a widely used psychometric test for assessing personality structure and psychopathology in adults',
+            'q3': 'Naturalistic observation allows researchers to directly monitor and record actions as they occur in natural settings',
+            'q4': 'The Vineland Adaptive Behavior Scale is crucial for assessing daily living skills needed for independent functioning in individuals with intellectual disabilities',
+            'q5': 'The Rorschach Inkblot Test is controversial for cross-cultural assessments because cultural differences may affect interpretation of ambiguous stimuli',
+            'q6': 'The 7-Minute Screen is a brief neurocognitive battery specifically designed to screen for Alzheimer\'s disease in elderly patients',
+            'q7': 'Culturally adapted nonverbal tests like Raven\'s Matrices minimize language barriers and cultural bias in assessment',
+            'q8': 'The Self-Directed Search (SDS) is a career interest inventory that matches personal interests and competencies with occupational themes',
+            'q9': 'Curriculum-Based Measurement (CBM) is a direct, repeated measurement of academic skills that is particularly effective for identifying learning disabilities in school settings',
+            'q10': 'The Psychopathy Checklist-Revised (PCL-R) is the correct answer because it is the most suitable tool for a forensic evaluation in a prison',
+            'q11': 'Brief trauma symptom inventories are essential for quickly identifying acute stress reactions and PTSD symptoms in disaster-affected populations',
+            'q12': 'Behavioral checklists with repeated measures are essential for tracking therapeutic progress over extended periods, providing quantifiable data across multiple time points',
+            'q13': 'ADOS-2 combined with parent interview is considered the gold standard for autism assessment, providing both structured observation and developmental history',
+            'q14': 'The Wisconsin Card Sorting Test is the correct answer because it is the most suitable tool for assessing executive functioning in a stroke survivor',
+            'q15': 'Online self-report surveys are efficient for screening depression in a college student population',
+            'q16': 'The primary limitation of the Myers-Briggs Type Indicator (MBTI) in career counseling is low empirical validity for predicting job success',
+            'q17': 'Norm-referenced tests compare students, not instructional quality',
+            'q18': 'Convenience sampling often leads to non-representative samples that limit the generalizability of findings to broader populations',
+            'q19': 'Culturally adapted instruments with professional interpretation provide the most comprehensive and ethical approach for assessing trauma in refugee populations'
+        };
+
+        function checkAnswers() {
+            if(quizElements.submitBtn.disabled) return;
+            
             let score = 0;
+            document.querySelectorAll('.feedback, .correct-answer, .explanation').forEach(el => el.remove());
 
-            for (let i = 0; i < questions.length; i++) {
-                const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
-                const userAnswer = selectedOption ? selectedOption.value : null;
+            for (let i = 1; i <= 19; i++) {
+                const checkedAnswer = document.querySelector(`input[id^="q${i}-"]:checked`);
+                const questionDiv = document.querySelector(`#q${i}-a`).closest('.question');
+                
+                if (checkedAnswer) {
+                    const selectedOption = checkedAnswer.id.split('-')[1];
+                    const isCorrect = selectedOption === correctAnswers[`q${i}`];
+                    
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'} show`;
+                    feedbackDiv.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+                    questionDiv.appendChild(feedbackDiv);
 
-                // Check if the answer is correct
-                const feedbackDiv = document.getElementById(`feedback-${i}`);
-                if (userAnswer === questions[i].answer) {
-                    score++;
-                    feedbackDiv.innerHTML = `<span class="correct">Correct! Your answer: ${userAnswer}</span>`;
+                    if (isCorrect) score++;
                 } else {
-                    feedbackDiv.innerHTML = `<span class="incorrect">Incorrect! Your answer: ${userAnswer || 'No answer'}. Correct answer: ${questions[i].answer}</span>`;
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = 'feedback incorrect show';
+                    feedbackDiv.textContent = 'Please answer this question';
+                    questionDiv.appendChild(feedbackDiv);
                 }
             }
 
-            // Display total score
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `<h2 class="score">Your Score: ${score} out of ${questions.length}</h2>`;
-        });
+            quizElements.scoreDisplay.textContent = `Score: ${score} out of 19 (${Math.round(score/19*100)}%)`;
+            quizElements.reviewBtn.style.display = 'inline-block';
+            quizElements.resetBtn.style.display = 'inline-block';
+            quizElements.submitBtn.disabled = true;
+        }
+
+        function showReview() {
+            document.querySelectorAll('.correct-answer, .explanation').forEach(el => el.remove());
+
+            for (let i = 1; i <= 19; i++) {
+                const questionDiv = document.querySelector(`#q${i}-a`).closest('.question');
+                const correctOption = correctAnswers[`q${i}`];
+                
+                const correctDiv = document.createElement('div');
+                correctDiv.className = 'correct-answer';
+                correctDiv.textContent = `Correct answer: Option ${correctOption.toUpperCase()}`;
+                questionDiv.appendChild(correctDiv);
+
+                const explainDiv = document.createElement('div');
+                explainDiv.className = 'explanation';
+                explainDiv.textContent = explanations[`q${i}`];
+                questionDiv.appendChild(explainDiv);
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('.check').forEach(el => el.checked = false);
+            document.querySelectorAll('.feedback, .correct-answer, .explanation').forEach(el => el.remove());
+            quizElements.scoreDisplay.textContent = '';
+            quizElements.reviewBtn.style.display = 'none';
+            quizElements.resetBtn.style.display = 'none';
+            quizElements.submitBtn.disabled = false;
+        }
     </script>
 </body>
 </html>
-
-
-
